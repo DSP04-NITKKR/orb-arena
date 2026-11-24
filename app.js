@@ -8,6 +8,7 @@ const BALLS = {
     projectileSpeed: 420,
     ultimateName: "Dagger Storm",
     ultimateDescription: "Summons 5 predictive daggers",
+    ultimateChargePerSecond: 5,
   },
 };
 
@@ -199,8 +200,16 @@ function update(now) {
     for (const fighter of [match.left, match.right]) {
       fighter.flash = Math.max(0, fighter.flash - delta * 4);
       fighter.contactFlash = Math.max(0, fighter.contactFlash - delta * 5);
-      fighter.ultimateCharge = Math.min(100, fighter.ultimateCharge + delta * 6);
+      fighter.ultimateCharge = Math.min(
+        100,
+        fighter.ultimateCharge + delta * fighter.ball.ultimateChargePerSecond
+      );
       updateUltimateUI(fighter);
+
+      if (fighter.ultimateCharge >= 100) {
+        const opponent = fighter.side === "left" ? match.right : match.left;
+        fireUltimate(fighter, opponent);
+      }
       fighter.turnTimer -= delta;
 
       if (fighter.turnTimer <= 0) {
