@@ -4,11 +4,11 @@ const BALLS = {
     name: "Dagger Ball",
     maxHealth: 100,
     projectileDamage: 10,
-    throwInterval: 900,
+    throwInterval: 1800,
     projectileSpeed: 420,
     ultimateName: "Dagger Storm",
     ultimateDescription: "Summons 5 predictive daggers",
-    ultimateChargePerSecond: 5,
+    ultimateChargePerSecond: 10,
   },
 };
 
@@ -69,12 +69,8 @@ function startMatch() {
 
   leftHealth.style.width = "100%";
   rightHealth.style.width = "100%";
-  leftUltimate.classList.add("disabled");
-  rightUltimate.classList.add("disabled");
   leftUltimateFill.style.width = "0%";
   rightUltimateFill.style.width = "0%";
-  leftUltimate.disabled = true;
-  rightUltimate.disabled = true;
   lastTime = performance.now();
   cancelAnimationFrame(animationFrame);
   animationFrame = requestAnimationFrame(update);
@@ -138,11 +134,10 @@ function fireUltimate(fighter, opponent) {
 function updateUltimateUI(fighter) {
   const charge = Math.min(100, fighter.ultimateCharge);
   const fill = fighter.side === "left" ? leftUltimateFill : rightUltimateFill;
-  const button = fighter.side === "left" ? leftUltimate : rightUltimate;
   fill.style.width = `${charge}%`;
-  button.disabled = charge < 100;
-  button.classList.toggle("disabled", charge < 100);
-  button.setAttribute("aria-label", charge >= 100 ? `${fighter.ball.name} ultimate ready` : `${fighter.ball.name} ultimate charging ${Math.floor(charge)} percent`);
+  const bar = fighter.side === "left" ? leftUltimate : rightUltimate;
+  bar.classList.toggle("charged", charge >= 100);
+  bar.setAttribute("aria-label", `${fighter.ball.name} ultimate ${Math.floor(charge)} percent charged`);
 }
 
 function createImpact(x, y, color) {
@@ -412,12 +407,6 @@ function endMatch(winnerSide) {
 
 document.querySelector("#fightButton").addEventListener("click", startMatch);
 document.querySelector("#rematchButton").addEventListener("click", startMatch);
-leftUltimate.addEventListener("click", () => {
-  if (match) fireUltimate(match.left, match.right);
-});
-rightUltimate.addEventListener("click", () => {
-  if (match) fireUltimate(match.right, match.left);
-});
 document.querySelector("#changeButton").addEventListener("click", () => {
   cancelAnimationFrame(animationFrame);
   battleScreen.classList.add("hidden");
