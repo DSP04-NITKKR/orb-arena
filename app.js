@@ -161,6 +161,8 @@ function throwDagger(fighter, opponent) {
     angle,
     owner: fighter.side,
     damage: fighter.ball.projectileDamage,
+    regularDagger: true,
+    ultimate: false,
   });
 }
 
@@ -169,6 +171,7 @@ function fireUltimate(fighter, opponent) {
 
   fighter.ultActive = true;
   fighter.ultimateCharge = 0;
+  if (fighter.ball.id === "dagger") fighter.successfulHits = 0;
   updateUltimateUI(fighter);
 
   const distance = Math.hypot(opponent.x - fighter.x, opponent.y - fighter.y);
@@ -469,14 +472,14 @@ function update(now) {
         opponent.flash = 1;
         createImpact(projectile.x, projectile.y, projectile.owner === "left" ? "#8addf2" : "#c397e5");
         projectile.hit = true;
-        if (!projectile.ultimate && projectile.owner === "left") {
+        if (projectile.regularDagger && projectile.owner === "left") {
           const owner = match.left;
           if (owner.ball.id === "dagger") {
             owner.successfulHits = Math.min(5, owner.successfulHits + 1);
             owner.ultimateCharge = owner.successfulHits * 20;
             if (owner.ultimateCharge >= 100) owner.ultimateCharge = 100;
           }
-        } else if (!projectile.ultimate) {
+        } else if (projectile.regularDagger) {
           const owner = match.right;
           if (owner.ball.id === "dagger") {
             owner.successfulHits = Math.min(5, owner.successfulHits + 1);
