@@ -88,6 +88,8 @@ function drawMovementSeconds() {
 function makeFighter(side, ballId) {
   const ball = BALLS[ballId];
   const movingRight = side === "left";
+  const initialSpeed = ball.id === "spikes" ? 252 : 126;
+  const initialVerticalSpeed = ball.id === "spikes" ? 102 : 51;
   return {
     side,
     ball,
@@ -95,8 +97,8 @@ function makeFighter(side, ballId) {
     x: side === "left" ? 178 : 782,
     y: canvas.height / 2,
     radius: 48,
-    vx: (movingRight ? 1 : -1) * 126,
-    vy: side === "left" ? 51 : -51,
+    vx: (movingRight ? 1 : -1) * initialSpeed,
+    vy: side === "left" ? initialVerticalSpeed : -initialVerticalSpeed,
     heading: 0,
     turnTimer: drawMovementSeconds(),
     contactFlash: 0,
@@ -388,7 +390,9 @@ function update(now) {
 
       if (fighter.turnTimer <= 0) {
         const boosted = fighter.moveSpeedUntil > match.elapsed;
-        const speed = (82 + Math.random() * 28) * (boosted ? 1.35 : 1);
+        const baseSpeed = fighter.ball.id === "spikes" ? 164 : 82;
+        const randomSpeed = fighter.ball.id === "spikes" ? 56 : 28;
+        const speed = (baseSpeed + Math.random() * randomSpeed) * (boosted ? 1.35 : 1);
         const towardCenter = fighter.side === "left" ? 1 : -1;
         const horizontalTarget = towardCenter * (0.4 + Math.random() * 0.6);
         const angle = Math.atan2((Math.random() - 0.5) * 1.3, horizontalTarget);
