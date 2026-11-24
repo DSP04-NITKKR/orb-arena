@@ -43,7 +43,7 @@ function makeFighter(side, ballId) {
     vx: (movingRight ? 1 : -1) * 58,
     vy: side === "left" ? 24 : -24,
     heading: 0,
-    turnTimer: 8 + Math.random() * 2,
+    turnTimer: 2 + Math.random() * 13,
     contactFlash: 0,
     flash: 0,
     nextThrow: 350,
@@ -214,7 +214,7 @@ function update(now) {
         const angle = Math.atan2((Math.random() - 0.5) * 1.3, horizontalTarget);
         fighter.vx = Math.cos(angle) * speed;
         fighter.vy = Math.sin(angle) * speed;
-        fighter.turnTimer = 8 + Math.random() * 2;
+        fighter.turnTimer = 2 + Math.random() * 13;
       }
 
       fighter.x += fighter.vx * delta;
