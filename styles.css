@@ -215,6 +215,11 @@ h1 {
   background: radial-gradient(circle at 35% 28%, #fff1d6 0 5%, #d2a06e 35%, #75513e 100%);
 }
 
+.portrait-mini.axe-ball {
+  background: radial-gradient(circle at 35% 28%, #eff0e8 0 5%, #aeb09f 35%, #625e55 100%);
+  color: #4b473f;
+}
+
 .ball-detail {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -275,6 +280,11 @@ h1 {
 .detail-orb.spikes-ball {
   background: radial-gradient(circle at 35% 28%, #fff1d6 0 5%, #d2a06e 28%, #86603f 68%, #4a3931 100%);
   box-shadow: 0 24px 50px rgba(210, 145, 82, 0.2);
+}
+
+.detail-orb.axe-ball {
+  background: radial-gradient(circle at 35% 28%, #f2f1df 0 5%, #aaa894 28%, #777365 68%, #4b473f 100%);
+  box-shadow: 0 24px 50px rgba(183, 176, 147, 0.22);
 }
 
 .detail-face { width: 76px; display: flex; justify-content: space-between; }
@@ -519,6 +529,11 @@ h1 {
 
 .mini-ball.purple {
   background: radial-gradient(circle at 35% 28%, #f2dfff 0 5%, #b48bd1 28%, #67418b 68%, #35244c);
+}
+
+.mini-ball.axe-ball {
+  background: radial-gradient(circle at 35% 28%, #f2f1df 0 5%, #aaa894 28%, #777365 68%, #4b473f);
+  clip-path: polygon(50% 0%, 58% 34%, 100% 50%, 58% 66%, 50% 100%, 42% 66%, 0% 50%, 42% 34%);
 }
 
 .mini-ball.spikes-ball {

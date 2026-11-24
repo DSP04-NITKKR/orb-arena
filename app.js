@@ -24,6 +24,20 @@ const BALLS = {
     ultimateChargePerSecond: 10,
     ultimateChargeHits: 0,
   },
+  axe: {
+    id: "axe",
+    name: "Axe Ball",
+    maxHealth: 230,
+    projectileDamage: 0,
+    throwInterval: 0,
+    projectileSpeed: 520,
+    contactDamage: 14,
+    axeDamage: 12,
+    ultimateName: "Future Step",
+    ultimateDescription: "Teleports to where it will be in 5 seconds",
+    ultimateChargePerSecond: 100 / 8,
+    ultimateChargeHits: 0,
+  },
 };
 
 const POWERUPS = {
@@ -115,8 +129,10 @@ function makeFighter(side, ballId) {
     attackSpeedUntil: 0,
     moveSpeedUntil: 0,
     successfulHits: 0,
+    axeAngle: 0,
     pickupText: "",
     pickupTextUntil: 0,
+    axeDamageUntil: 0,
   };
 }
 
@@ -188,7 +204,15 @@ function fireUltimate(fighter, opponent) {
   fighter.flash = 1.2;
   roundLabel.textContent = `${fighter.side === "left" ? "LEFT" : "RIGHT"} ULTIMATE`;
 
-  if (fighter.ball.id === "spikes") {
+  if (fighter.ball.id === "axe") {
+    const predictedX = fighter.x + fighter.vx * 5;
+    const predictedY = fighter.y + fighter.vy * 5;
+    fighter.x = Math.max(fighter.radius + 24, Math.min(canvas.width - fighter.radius - 24, predictedX));
+    fighter.y = Math.max(fighter.radius + 24, Math.min(canvas.height - fighter.radius - 24, predictedY));
+    createImpact(fighter.x, fighter.y, "#d9a06a");
+  }
+
+  if (fighter.ball.id === "spikes" || fighter.ball.id === "axe") {
     for (let i = 0; i < 16; i += 1) {
       const angle = (Math.PI * 2 * i) / 16;
       match.projectiles.push({
@@ -247,11 +271,14 @@ function updateMatchIdentity(fighter) {
   const descriptionText = document.querySelector(isLeft ? "#leftDescriptionText" : "#rightDescriptionText");
 
   name.textContent = fighter.ball.name;
-  mini.className = `mini-ball ${fighter.ball.id === "spikes" ? "spikes-ball" : "dagger-ball"}${isLeft ? "" : " purple"}`;
+  const ballClass = fighter.ball.id === "spikes" ? "spikes-ball" : fighter.ball.id === "axe" ? "axe-ball" : "dagger-ball";
+  mini.className = `mini-ball ${ballClass}${isLeft ? "" : " purple"}`;
   descriptionName.textContent = fighter.ball.name;
   descriptionText.textContent = fighter.ball.id === "spikes"
     ? "18 damage on touch · Spike Burst charges over 10 sec"
-    : "Dagger every 1.8 sec · Dagger Storm charges from 5 successful hits";
+    : fighter.ball.id === "axe"
+      ? "12 damage per axe hit · Future Step teleports every 8 sec"
+      : "Dagger every 1.8 sec · Dagger Storm charges from 5 successful hits";
 }
 
 function createImpact(x, y, color) {
@@ -395,10 +422,11 @@ function update(now) {
     for (const fighter of [match.left, match.right]) {
       fighter.flash = Math.max(0, fighter.flash - delta * 4);
       fighter.contactFlash = Math.max(0, fighter.contactFlash - delta * 5);
+      fighter.axeAngle = (fighter.axeAngle || 0) + delta * 3.8;
       if (fighter.ultActive && match.elapsed >= fighter.ultimateCooldownUntil) {
         fighter.ultActive = false;
       }
-      if (fighter.ball.id === "spikes") {
+      if (fighter.ball.id === "spikes" || fighter.ball.id === "axe") {
         fighter.ultimateCharge = Math.min(
           100,
           fighter.ultimateCharge + delta * fighter.ball.ultimateChargePerSecond
@@ -461,6 +489,26 @@ function update(now) {
     }
 
     separateFighters(match.left, match.right);
+
+    for (const fighter of [match.left, match.right]) {
+      if (fighter.ball.id !== "axe") continue;
+      const opponent = fighter.side === "left" ? match.right : match.left;
+      const axeDistance = 82;
+      const axeX = fighter.x + Math.cos(fighter.axeAngle) * axeDistance;
+      const axeY = fighter.y + Math.sin(fighter.axeAngle) * axeDistance;
+      if (Math.hypot(axeX - opponent.x, axeY - opponent.y) < opponent.radius - 8) {
+        if (fighter.axeDamageUntil > match.elapsed) continue;
+        fighter.axeDamageUntil = match.elapsed + 650;
+        if (opponent.shield > 0) {
+          opponent.shield = 0;
+        } else {
+          opponent.health = Math.max(0, opponent.health - fighter.ball.axeDamage);
+          updateHealthUI(opponent);
+        }
+        createImpact(axeX, axeY, "#d9a06a");
+        if (opponent.health <= 0) endMatch(fighter.side);
+      }
+    }
 
     for (const powerup of match.powerups) {
       powerup.age += delta;
@@ -667,6 +715,12 @@ function drawFighter(fighter) {
     base.addColorStop(0.48, "#a66e43");
     base.addColorStop(0.82, "#75513e");
     base.addColorStop(1, "#4a3931");
+  } else if (fighter.ball.id === "axe") {
+    base.addColorStop(0, "#f2f1df");
+    base.addColorStop(0.12, "#aaa894");
+    base.addColorStop(0.48, "#777365");
+    base.addColorStop(0.82, "#625e55");
+    base.addColorStop(1, "#4b473f");
   } else if (left) {
     base.addColorStop(0, "#dafaff");
     base.addColorStop(0.12, "#9fddea");
@@ -711,6 +765,31 @@ function drawFighter(fighter) {
     }
   }
 
+  if (fighter.ball.id === "axe") {
+    ctx.save();
+    ctx.rotate(fighter.axeAngle || 0);
+    ctx.strokeStyle = "#9a7655";
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(82, 0);
+    ctx.stroke();
+    ctx.translate(82, 0);
+    ctx.fillStyle = "#d3d0c3";
+    ctx.strokeStyle = "#5f5548";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-6, -14);
+    ctx.lineTo(24, -20);
+    ctx.lineTo(20, 0);
+    ctx.lineTo(24, 20);
+    ctx.lineTo(-6, 14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
   ctx.fillStyle = "#102232";
   ctx.beginPath();
   ctx.arc(-14, -7, 6, 0, Math.PI * 2);
@@ -746,6 +825,14 @@ const BALL_DETAILS = {
     health: "220",
     ultimate: "10 sec",
   },
+  axe: {
+    name: "Axe Ball",
+    role: "Orbiting weapon",
+    description: "Rotates an axe for heavy close-range hits and teleports to its 5-second future position.",
+    attack: "12 axe",
+    health: "230",
+    ultimate: "8 sec",
+  },
 };
 
 function showSideDetails(side, ballId) {
@@ -759,8 +846,13 @@ function showSideDetails(side, ballId) {
   if (description) description.textContent = details.description;
   const detailOrb = document.querySelector(`#${prefix}DetailBall`);
   if (detailOrb) {
-    detailOrb.className = `detail-orb ${ballId === "spikes" ? "spikes-ball" : "dagger-ball"}`;
-    detailOrb.innerHTML = ballId === "spikes" ? '<span class="detail-spike">◆</span>' : '<span class="detail-face"><i></i><i></i></span>';
+    const orbClass = ballId === "spikes" ? "spikes-ball" : ballId === "axe" ? "axe-ball" : "dagger-ball";
+    detailOrb.className = `detail-orb ${orbClass}`;
+    detailOrb.innerHTML = ballId === "spikes"
+      ? '<span class="detail-spike">◆</span>'
+      : ballId === "axe"
+        ? '<span class="detail-spike">⚒</span>'
+        : '<span class="detail-face"><i></i><i></i></span>';
   }
 }
 
