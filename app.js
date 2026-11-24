@@ -6,6 +6,8 @@ const BALLS = {
     projectileDamage: 10,
     throwInterval: 900,
     projectileSpeed: 420,
+    ultimateName: "Dagger Storm",
+    ultimateDescription: "Summons 5 predictive daggers",
   },
 };
 
@@ -15,6 +17,10 @@ const canvas = document.querySelector("#arena");
 const ctx = canvas.getContext("2d");
 const leftHealth = document.querySelector("#leftHealth");
 const rightHealth = document.querySelector("#rightHealth");
+const leftUltimate = document.querySelector("#leftUltimate");
+const rightUltimate = document.querySelector("#rightUltimate");
+const leftUltimateFill = document.querySelector("#leftUltimateFill");
+const rightUltimateFill = document.querySelector("#rightUltimateFill");
 const roundLabel = document.querySelector("#roundLabel");
 const winnerOverlay = document.querySelector("#winnerOverlay");
 const winnerName = document.querySelector("#winnerName");
@@ -40,6 +46,8 @@ function makeFighter(side, ballId) {
     contactFlash: 0,
     flash: 0,
     nextThrow: 350,
+    ultimateCharge: 0,
+    ultActive: false,
   };
 }
 
@@ -60,6 +68,12 @@ function startMatch() {
 
   leftHealth.style.width = "100%";
   rightHealth.style.width = "100%";
+  leftUltimate.classList.add("disabled");
+  rightUltimate.classList.add("disabled");
+  leftUltimateFill.style.width = "0%";
+  rightUltimateFill.style.width = "0%";
+  leftUltimate.disabled = true;
+  rightUltimate.disabled = true;
   lastTime = performance.now();
   cancelAnimationFrame(animationFrame);
   animationFrame = requestAnimationFrame(update);
@@ -81,6 +95,53 @@ function throwDagger(fighter, opponent) {
     owner: fighter.side,
     damage: fighter.ball.projectileDamage,
   });
+}
+
+function fireUltimate(fighter, opponent) {
+  if (fighter.ultimateCharge < 100 || fighter.ultActive) return;
+
+  fighter.ultActive = true;
+  fighter.ultimateCharge = 0;
+  updateUltimateUI(fighter);
+
+  const distance = Math.hypot(opponent.x - fighter.x, opponent.y - fighter.y);
+  const travelTime = distance / fighter.ball.projectileSpeed;
+  const aimX = opponent.x + opponent.vx * travelTime * 0.52;
+  const aimY = opponent.y + opponent.vy * travelTime * 0.52;
+  const baseAngle = Math.atan2(aimY - fighter.y, aimX - fighter.x);
+  const spread = [-0.18, -0.09, 0, 0.09, 0.18];
+
+  fighter.flash = 1.2;
+  roundLabel.textContent = `${fighter.side === "left" ? "LEFT" : "RIGHT"} ULTIMATE`;
+
+  for (const offset of spread) {
+    const angle = baseAngle + offset;
+    match.projectiles.push({
+      x: fighter.x + Math.cos(baseAngle) * 50,
+      y: fighter.y + Math.sin(baseAngle) * 50,
+      vx: Math.cos(angle) * fighter.ball.projectileSpeed * 1.08,
+      vy: Math.sin(angle) * fighter.ball.projectileSpeed * 1.08,
+      angle,
+      owner: fighter.side,
+      damage: 8,
+      ultimate: true,
+    });
+  }
+
+  setTimeout(() => {
+    if (match && !match.ended) roundLabel.textContent = "FIGHT";
+  }, 900);
+  fighter.ultActive = false;
+}
+
+function updateUltimateUI(fighter) {
+  const charge = Math.min(100, fighter.ultimateCharge);
+  const fill = fighter.side === "left" ? leftUltimateFill : rightUltimateFill;
+  const button = fighter.side === "left" ? leftUltimate : rightUltimate;
+  fill.style.width = `${charge}%`;
+  button.disabled = charge < 100;
+  button.classList.toggle("disabled", charge < 100);
+  button.setAttribute("aria-label", charge >= 100 ? `${fighter.ball.name} ultimate ready` : `${fighter.ball.name} ultimate charging ${Math.floor(charge)} percent`);
 }
 
 function createImpact(x, y, color) {
@@ -138,6 +199,8 @@ function update(now) {
     for (const fighter of [match.left, match.right]) {
       fighter.flash = Math.max(0, fighter.flash - delta * 4);
       fighter.contactFlash = Math.max(0, fighter.contactFlash - delta * 5);
+      fighter.ultimateCharge = Math.min(100, fighter.ultimateCharge + delta * 6);
+      updateUltimateUI(fighter);
       fighter.turnTimer -= delta;
 
       if (fighter.turnTimer <= 0) {
@@ -340,6 +403,12 @@ function endMatch(winnerSide) {
 
 document.querySelector("#fightButton").addEventListener("click", startMatch);
 document.querySelector("#rematchButton").addEventListener("click", startMatch);
+leftUltimate.addEventListener("click", () => {
+  if (match) fireUltimate(match.left, match.right);
+});
+rightUltimate.addEventListener("click", () => {
+  if (match) fireUltimate(match.right, match.left);
+});
 document.querySelector("#changeButton").addEventListener("click", () => {
   cancelAnimationFrame(animationFrame);
   battleScreen.classList.add("hidden");
