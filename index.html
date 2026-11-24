@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orb Arena</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span>ORB ARENA</span>
+        </div>
+        <button id="resetButton" class="text-button" type="button">Reset</button>
+      </header>
+
+      <section id="setupScreen" class="setup-screen">
+        <div class="setup-heading">
+          <p class="eyebrow">Duel setup</p>
+          <h1>Choose two contenders</h1>
+        </div>
+
+        <div class="selection-grid">
+          <article class="fighter-slot">
+            <div class="slot-label"><span>1</span> Left fighter</div>
+            <button id="leftBall" class="ball-card selected" type="button" aria-pressed="true">
+              <span class="ball-preview dagger-ball">
+                <span class="ball-face"><i></i><i></i></span>
+              </span>
+              <span class="ball-copy">
+                <strong>Dagger Ball</strong>
+                <small>Ranged thrower</small>
+              </span>
+              <span class="check">✓</span>
+            </button>
+          </article>
+
+          <div class="versus">VS</div>
+
+          <article class="fighter-slot">
+            <div class="slot-label"><span>2</span> Right fighter</div>
+            <button id="rightBall" class="ball-card selected" type="button" aria-pressed="true">
+              <span class="ball-preview dagger-ball purple">
+                <span class="ball-face"><i></i><i></i></span>
+              </span>
+              <span class="ball-copy">
+                <strong>Dagger Ball</strong>
+                <small>Ranged thrower</small>
+              </span>
+              <span class="check">✓</span>
+            </button>
+          </article>
+        </div>
+
+        <button id="fightButton" class="fight-button" type="button">
+          <span>Start fight</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </section>
+
+      <section id="battleScreen" class="battle-screen hidden" aria-live="polite">
+        <div class="match-header">
+          <div class="combatant left-combatant">
+            <span class="mini-ball dagger-ball"></span>
+            <div>
+              <span>Dagger Ball</span>
+              <div class="health-track"><div id="leftHealth" class="health-fill"></div></div>
+            </div>
+          </div>
+          <div id="roundLabel" class="round-label">FIGHT</div>
+          <div class="combatant right-combatant">
+            <div>
+              <span>Dagger Ball</span>
+              <div class="health-track"><div id="rightHealth" class="health-fill"></div></div>
+            </div>
+            <span class="mini-ball dagger-ball purple"></span>
+          </div>
+        </div>
+
+        <div class="arena-shell">
+          <canvas id="arena" width="960" height="540" aria-label="Ball battle arena"></canvas>
+          <div id="winnerOverlay" class="winner-overlay hidden">
+            <p id="winnerName">Dagger Ball wins</p>
+            <button id="rematchButton" type="button">Rematch</button>
+            <button id="changeButton" class="secondary-button" type="button">Change fighters</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
