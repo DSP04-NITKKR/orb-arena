@@ -88,8 +88,10 @@ function drawMovementSeconds() {
 function makeFighter(side, ballId) {
   const ball = BALLS[ballId];
   const movingRight = side === "left";
-  const initialSpeed = ball.id === "spikes" ? 252 : 126;
-  const initialVerticalSpeed = ball.id === "spikes" ? 102 : 51;
+  const daggerHorizontalSpeed = 126;
+  const daggerVerticalSpeed = 51;
+  const initialSpeed = ball.id === "spikes" ? daggerHorizontalSpeed * 2 : daggerHorizontalSpeed;
+  const initialVerticalSpeed = ball.id === "spikes" ? daggerVerticalSpeed * 2 : daggerVerticalSpeed;
   return {
     side,
     ball,
