@@ -81,9 +81,9 @@
       <section id="battleScreen" class="battle-screen hidden" aria-live="polite">
         <div class="match-header">
           <div class="combatant left-combatant">
-            <span class="mini-ball dagger-ball"></span>
+            <span id="leftMiniBall" class="mini-ball dagger-ball"></span>
             <div>
-              <span>Dagger Ball</span>
+              <span id="leftMatchName">Dagger Ball</span>
               <div class="health-track"><div id="leftHealth" class="health-fill"></div></div>
               <div id="leftUltimate" class="ultimate-track" role="progressbar" aria-label="Dagger Ball ultimate charge">
                 <span id="leftUltimateFill"></span>
@@ -93,13 +93,13 @@
           <div id="roundLabel" class="round-label">FIGHT</div>
           <div class="combatant right-combatant">
             <div>
-              <span>Dagger Ball</span>
+              <span id="rightMatchName">Dagger Ball</span>
               <div class="health-track"><div id="rightHealth" class="health-fill"></div></div>
               <div id="rightUltimate" class="ultimate-track" role="progressbar" aria-label="Dagger Ball ultimate charge">
                 <span id="rightUltimateFill"></span>
               </div>
             </div>
-            <span class="mini-ball dagger-ball purple"></span>
+            <span id="rightMiniBall" class="mini-ball dagger-ball purple"></span>
           </div>
         </div>
 
@@ -112,8 +112,10 @@
           </div>
         </div>
         <div class="match-description">
-          <strong>Dagger Ball</strong>
-          <span>Dagger every 1.8 sec · Dagger Storm auto-fires after 10 sec</span>
+          <strong id="leftDescriptionName">Dagger Ball</strong>
+          <span id="leftDescriptionText">Dagger every 1.8 sec · Dagger Storm charges from 5 successful hits</span>
+          <strong id="rightDescriptionName">Dagger Ball</strong>
+          <span id="rightDescriptionText">Dagger every 1.8 sec · Dagger Storm charges from 5 successful hits</span>
         </div>
       </section>
     </main>

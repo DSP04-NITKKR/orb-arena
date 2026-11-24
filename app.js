@@ -138,6 +138,8 @@ function startMatch() {
   rightHealth.style.width = "100%";
   leftUltimateFill.style.width = "0%";
   rightUltimateFill.style.width = "0%";
+  updateMatchIdentity(match.left);
+  updateMatchIdentity(match.right);
   lastTime = performance.now();
   cancelAnimationFrame(animationFrame);
   animationFrame = requestAnimationFrame(update);
@@ -226,6 +228,21 @@ function updateUltimateUI(fighter) {
   } else {
     bar.setAttribute("aria-label", `${fighter.ball.name} ultimate ${Math.floor(charge)} percent charged`);
   }
+}
+
+function updateMatchIdentity(fighter) {
+  const isLeft = fighter.side === "left";
+  const name = document.querySelector(isLeft ? "#leftMatchName" : "#rightMatchName");
+  const mini = document.querySelector(isLeft ? "#leftMiniBall" : "#rightMiniBall");
+  const descriptionName = document.querySelector(isLeft ? "#leftDescriptionName" : "#rightDescriptionName");
+  const descriptionText = document.querySelector(isLeft ? "#leftDescriptionText" : "#rightDescriptionText");
+
+  name.textContent = fighter.ball.name;
+  mini.className = `mini-ball ${fighter.ball.id === "spikes" ? "spikes-ball" : "dagger-ball"}${isLeft ? "" : " purple"}`;
+  descriptionName.textContent = fighter.ball.name;
+  descriptionText.textContent = fighter.ball.id === "spikes"
+    ? "18 damage on touch · Spike Burst charges over 10 sec"
+    : "Dagger every 1.8 sec · Dagger Storm charges from 5 successful hits";
 }
 
 function createImpact(x, y, color) {
@@ -616,7 +633,13 @@ function drawFighter(fighter) {
 
   const left = fighter.side === "left";
   const base = ctx.createRadialGradient(-16, -20, 4, 0, 0, fighter.radius);
-  if (left) {
+  if (fighter.ball.id === "spikes") {
+    base.addColorStop(0, "#fff0c9");
+    base.addColorStop(0.12, "#deb27a");
+    base.addColorStop(0.48, "#a66e43");
+    base.addColorStop(0.82, "#75513e");
+    base.addColorStop(1, "#4a3931");
+  } else if (left) {
     base.addColorStop(0, "#dafaff");
     base.addColorStop(0.12, "#9fddea");
     base.addColorStop(0.48, "#65abc4");
@@ -634,9 +657,31 @@ function drawFighter(fighter) {
   ctx.arc(0, 0, fighter.radius + fighter.flash * 5, 0, Math.PI * 2);
   ctx.fillStyle = base;
   ctx.shadowColor = left ? "rgba(111, 208, 237, 0.38)" : "rgba(184, 130, 215, 0.38)";
+  if (fighter.ball.id === "spikes") {
+    ctx.shadowColor = "rgba(231, 171, 99, 0.42)";
+  }
   ctx.shadowBlur = 26;
   ctx.fill();
   ctx.shadowBlur = 0;
+
+  if (fighter.ball.id === "spikes") {
+    ctx.fillStyle = "#e0b16f";
+    ctx.strokeStyle = "#4a3931";
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 8; i += 1) {
+      const angle = (Math.PI * 2 * i) / 8;
+      ctx.save();
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.moveTo(fighter.radius - 2, 0);
+      ctx.lineTo(fighter.radius + 18, -9);
+      ctx.lineTo(fighter.radius + 18, 9);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
 
   ctx.fillStyle = "#102232";
   ctx.beginPath();

@@ -443,6 +443,11 @@ h1 {
   background: radial-gradient(circle at 35% 28%, #f2dfff 0 5%, #b48bd1 28%, #67418b 68%, #35244c);
 }
 
+.mini-ball.spikes-ball {
+  background: radial-gradient(circle at 35% 28%, #fff1d6 0 5%, #deb27a 28%, #9a683f 68%, #4a3931);
+  clip-path: polygon(50% 0%, 63% 24%, 88% 12%, 76% 38%, 100% 50%, 76% 62%, 88% 88%, 63% 76%, 50% 100%, 37% 76%, 12% 88%, 24% 62%, 0% 50%, 24% 38%, 12% 12%, 37% 24%);
+}
+
 .health-track {
   height: 7px;
   margin-top: 8px;
