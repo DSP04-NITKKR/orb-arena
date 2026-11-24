@@ -88,8 +88,8 @@ function drawMovementSeconds() {
 function makeFighter(side, ballId) {
   const ball = BALLS[ballId];
   const movingRight = side === "left";
-  const daggerHorizontalSpeed = 126;
-  const daggerVerticalSpeed = 51;
+  const daggerHorizontalSpeed = 150;
+  const daggerVerticalSpeed = 61;
   const initialSpeed = ball.id === "spikes" ? daggerHorizontalSpeed * 2 : daggerHorizontalSpeed;
   const initialVerticalSpeed = ball.id === "spikes" ? daggerVerticalSpeed * 2 : daggerVerticalSpeed;
   return {
@@ -356,7 +356,7 @@ function applyPowerup(fighter, powerup) {
   fighter.pickupTextUntil = match.elapsed + 1400;
 
   if (powerup.type === "heal") {
-    fighter.health = Math.min(fighter.ball.maxHealth, fighter.health + 40);
+    fighter.health = Math.min(fighter.ball.maxHealth, fighter.health + 20);
   } else if (powerup.type === "damage") {
     fighter.damageBoostUntil = match.elapsed + 9000;
   } else if (powerup.type === "attackSpeed") {
@@ -415,9 +415,9 @@ function update(now) {
 
       if (fighter.turnTimer <= 0) {
         const boosted = fighter.moveSpeedUntil > match.elapsed;
-        const baseSpeed = fighter.ball.id === "spikes" ? 164 : 82;
-        const randomSpeed = fighter.ball.id === "spikes" ? 56 : 28;
-        const speed = (baseSpeed + Math.random() * randomSpeed) * (boosted ? 1.35 : 1);
+        const baseSpeed = fighter.ball.id === "spikes" ? 196 : 98;
+        const randomSpeed = fighter.ball.id === "spikes" ? 68 : 34;
+        const speed = (baseSpeed + Math.random() * randomSpeed) * (boosted ? 1.5 : 1);
         const towardCenter = fighter.side === "left" ? 1 : -1;
         const horizontalTarget = towardCenter * (0.4 + Math.random() * 0.6);
         const angle = Math.atan2((Math.random() - 0.5) * 1.3, horizontalTarget);
@@ -455,7 +455,7 @@ function update(now) {
         throwDagger(fighter, opponent);
         const boosted = fighter.attackSpeedUntil > match.elapsed;
         fighter.nextThrow = boosted
-          ? fighter.ball.throwInterval * 0.55
+          ? fighter.ball.throwInterval * 0.5
           : fighter.ball.throwInterval;
       }
     }
@@ -488,7 +488,7 @@ function update(now) {
           createImpact(projectile.x, projectile.y, "#f1df78");
         } else {
           const owner = projectile.owner === "left" ? match.left : match.right;
-          const damageMultiplier = owner.damageBoostUntil > match.elapsed ? 1.5 : 1;
+              const damageMultiplier = owner.damageBoostUntil > match.elapsed ? 2 : 1;
           opponent.health = Math.max(0, opponent.health - projectile.damage * damageMultiplier);
         }
         opponent.flash = 1;
