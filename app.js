@@ -58,6 +58,17 @@ let animationFrame = 0;
 let lastTime = 0;
 let match = null;
 
+const MOVEMENT_DRAW = [];
+for (let seconds = 2; seconds <= 15; seconds += 1) {
+  for (let ball = 0; ball < seconds; ball += 1) {
+    MOVEMENT_DRAW.push(seconds);
+  }
+}
+
+function drawMovementSeconds() {
+  return MOVEMENT_DRAW[Math.floor(Math.random() * MOVEMENT_DRAW.length)];
+}
+
 function makeFighter(side, ballId) {
   const ball = BALLS[ballId];
   const movingRight = side === "left";
@@ -71,7 +82,7 @@ function makeFighter(side, ballId) {
     vx: (movingRight ? 1 : -1) * 84,
     vy: side === "left" ? 34 : -34,
     heading: 0,
-    turnTimer: 2 + Math.random() * 13,
+    turnTimer: drawMovementSeconds(),
     contactFlash: 0,
     flash: 0,
     nextThrow: 350,
@@ -302,7 +313,7 @@ function update(now) {
         const angle = Math.atan2((Math.random() - 0.5) * 1.3, horizontalTarget);
         fighter.vx = Math.cos(angle) * speed;
         fighter.vy = Math.sin(angle) * speed;
-        fighter.turnTimer = 2 + Math.random() * 13;
+        fighter.turnTimer = drawMovementSeconds();
       }
 
       fighter.x += fighter.vx * delta;
