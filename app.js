@@ -465,14 +465,14 @@ function update(now) {
         opponent.flash = 1;
         createImpact(projectile.x, projectile.y, projectile.owner === "left" ? "#8addf2" : "#c397e5");
         projectile.hit = true;
-        if (projectile.owner === "left") {
+        if (!projectile.ultimate && projectile.owner === "left") {
           const owner = match.left;
           if (owner.ball.id === "dagger") {
             owner.successfulHits = Math.min(5, owner.successfulHits + 1);
             owner.ultimateCharge = owner.successfulHits * 20;
             if (owner.ultimateCharge >= 100) owner.ultimateCharge = 100;
           }
-        } else {
+        } else if (!projectile.ultimate) {
           const owner = match.right;
           if (owner.ball.id === "dagger") {
             owner.successfulHits = Math.min(5, owner.successfulHits + 1);
