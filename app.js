@@ -73,6 +73,7 @@ let lastTime = 0;
 let match = null;
 let selectedLeftBall = "dagger";
 let selectedRightBall = "dagger";
+let activeSelectionSide = "left";
 
 const MOVEMENT_DRAW = [];
 for (let seconds = 2; seconds <= 15; seconds += 1) {
@@ -655,26 +656,67 @@ function endMatch(winnerSide) {
 }
 
 document.querySelector("#fightButton").addEventListener("click", startMatch);
-document.querySelectorAll(".ball-card[data-side][data-ball], #leftBall, #rightBall").forEach((card) => {
-  card.addEventListener("click", () => {
-    const side = card.dataset.side || (card.id === "leftBall" ? "left" : "right");
-    const ballId = card.dataset.ball;
-    if (side === "left") selectedLeftBall = ballId;
-    if (side === "right") selectedRightBall = ballId;
+const BALL_DETAILS = {
+  dagger: {
+    name: "Dagger Ball",
+    role: "Ranged thrower",
+    description: "A precise ranged fighter that charges Dagger Storm by landing 5 successful dagger hits.",
+    attack: "Dagger",
+    health: "200",
+    ultimate: "5 hits",
+  },
+  spikes: {
+    name: "Spikes Ball",
+    role: "Close-contact bruiser",
+    description: "A high-contact attacker that deals heavy damage when colliding and bursts spikes in every direction.",
+    attack: "18 touch",
+    health: "220",
+    ultimate: "10 sec",
+  },
+};
 
-    const options = side === "left"
-      ? [document.querySelector("#leftBall"), document.querySelector(".spikes-card[data-side='left']")]
-      : [document.querySelector("#rightBall"), document.querySelector(".spikes-card[data-side='right']")];
+function setSelectionSide(side) {
+  activeSelectionSide = side;
+  document.querySelectorAll(".fighter-tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.side === side);
+  });
+  document.querySelector("#slotLabel").textContent = `${side === "left" ? "Left" : "Right"} fighter`;
+  const ballId = side === "left" ? selectedLeftBall : selectedRightBall;
+  showBallDetails(ballId);
+}
 
-    for (const option of options) {
-      const selected = option === card;
-      option.classList.toggle("selected", selected);
-      option.setAttribute("aria-pressed", selected ? "true" : "false");
-      option.querySelector(".check")?.remove();
-      if (selected) {
-        option.insertAdjacentHTML("beforeend", '<span class="check">✓</span>');
-      }
-    }
+function showBallDetails(ballId) {
+  const details = BALL_DETAILS[ballId];
+  document.querySelector("#detailName").textContent = details.name;
+  document.querySelector("#detailRole").textContent = details.role;
+  document.querySelector("#detailDescription").textContent = details.description;
+  document.querySelector("#detailAttack").textContent = details.attack;
+  document.querySelector("#detailHealth").textContent = details.health;
+  document.querySelector("#detailUltimate").textContent = details.ultimate;
+  document.querySelector("#slotName").textContent = details.name;
+
+  const detailOrb = document.querySelector("#detailBall");
+  const slotOrb = document.querySelector("#slotBall");
+  detailOrb.className = `detail-orb ${ballId === "spikes" ? "spikes-ball" : "dagger-ball"}`;
+  slotOrb.className = `detail-orb ${ballId === "spikes" ? "spikes-ball" : "dagger-ball"}`;
+  detailOrb.innerHTML = ballId === "spikes" ? '<span class="detail-spike">◆</span>' : '<span class="detail-face"><i></i><i></i></span>';
+  slotOrb.innerHTML = ballId === "spikes" ? '<span class="detail-spike">◆</span>' : '<span class="detail-face"><i></i><i></i></span>';
+
+  document.querySelectorAll(".ball-portrait").forEach((portrait) => {
+    portrait.classList.toggle("selected", portrait.dataset.ball === ballId);
+  });
+}
+
+document.querySelectorAll(".fighter-tab").forEach((tab) => {
+  tab.addEventListener("click", () => setSelectionSide(tab.dataset.side));
+});
+
+document.querySelectorAll(".ball-portrait").forEach((portrait) => {
+  portrait.addEventListener("click", () => {
+    const ballId = portrait.dataset.ball;
+    if (activeSelectionSide === "left") selectedLeftBall = ballId;
+    else selectedRightBall = ballId;
+    showBallDetails(ballId);
   });
 });
 document.querySelector("#rematchButton").addEventListener("click", startMatch);

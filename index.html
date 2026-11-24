@@ -22,54 +22,54 @@
           <h1>Choose two contenders</h1>
         </div>
 
-        <div class="selection-grid">
-          <article class="fighter-slot">
-            <div class="slot-label"><span>1</span> Left fighter</div>
-            <button id="leftBall" class="ball-card selected" type="button" aria-pressed="true" data-ball="dagger">
-              <span class="ball-preview dagger-ball">
-                <span class="ball-face"><i></i><i></i></span>
-              </span>
-              <span class="ball-copy">
-                <strong>Dagger Ball</strong>
-                <small>Ranged thrower</small>
-                <span class="attack-pattern">Throws one dagger every 1.8 sec<br />Dagger Storm charges over 10 sec · auto-fires</span>
-              </span>
-              <span class="check">✓</span>
+        <div class="agent-select">
+          <aside class="fighter-tabs">
+            <button id="leftTab" class="fighter-tab active" type="button" data-side="left">
+              <span>1</span>
+              <strong>Left</strong>
             </button>
-            <button class="ball-card spikes-card" type="button" data-side="left" data-ball="spikes">
-              <span class="ball-preview spikes-preview"><span class="spikes-visual">◆</span></span>
-              <span class="ball-copy">
-                <strong>Spikes Ball</strong>
-                <small>Close-contact bruiser</small>
-                <span class="attack-pattern">18 damage on touch<br />Spike Burst every 10 sec</span>
-              </span>
+            <button id="rightTab" class="fighter-tab" type="button" data-side="right">
+              <span>2</span>
+              <strong>Right</strong>
             </button>
+          </aside>
+
+          <aside class="ball-rail" aria-label="Ball roster">
+            <button class="ball-portrait selected" type="button" aria-label="Select Dagger Ball" data-ball="dagger">
+              <span class="portrait-mini dagger-ball"></span>
+            </button>
+            <button class="ball-portrait" type="button" aria-label="Select Spikes Ball" data-ball="spikes">
+              <span class="portrait-mini spikes-ball">◆</span>
+            </button>
+          </aside>
+
+          <article class="ball-detail">
+            <div class="detail-visual">
+              <span id="detailBall" class="detail-orb dagger-ball">
+                <span class="detail-face"><i></i><i></i></span>
+              </span>
+            </div>
+            <div class="detail-copy">
+              <p id="detailRole" class="detail-role">Ranged thrower</p>
+              <h2 id="detailName">Dagger Ball</h2>
+              <p id="detailDescription">A precise ranged fighter that builds its ultimate by landing successful dagger hits.</p>
+              <div class="detail-stats">
+                <div><span>Attack</span><strong id="detailAttack">Dagger</strong></div>
+                <div><span>Health</span><strong id="detailHealth">200</strong></div>
+                <div><span>Ultimate</span><strong id="detailUltimate">5 hits</strong></div>
+              </div>
+            </div>
           </article>
 
-          <div class="versus">VS</div>
-
-          <article class="fighter-slot">
-            <div class="slot-label"><span>2</span> Right fighter</div>
-            <button id="rightBall" class="ball-card selected" type="button" aria-pressed="true" data-ball="dagger">
-              <span class="ball-preview dagger-ball purple">
-                <span class="ball-face"><i></i><i></i></span>
+          <aside class="slot-preview">
+            <p id="slotLabel">Left fighter</p>
+            <div class="slot-preview-orb">
+              <span id="slotBall" class="detail-orb dagger-ball">
+                <span class="detail-face"><i></i><i></i></span>
               </span>
-              <span class="ball-copy">
-                <strong>Dagger Ball</strong>
-                <small>Ranged thrower</small>
-                <span class="attack-pattern">Throws one dagger every 1.8 sec<br />Dagger Storm charges over 10 sec · auto-fires</span>
-              </span>
-              <span class="check">✓</span>
-            </button>
-            <button class="ball-card spikes-card" type="button" data-side="right" data-ball="spikes">
-              <span class="ball-preview spikes-preview purple"><span class="spikes-visual">◆</span></span>
-              <span class="ball-copy">
-                <strong>Spikes Ball</strong>
-                <small>Close-contact bruiser</small>
-                <span class="attack-pattern">18 damage on touch<br />Spike Burst every 10 sec</span>
-              </span>
-            </button>
-          </article>
+            </div>
+            <strong id="slotName">Dagger Ball</strong>
+          </aside>
         </div>
 
         <button id="fightButton" class="fight-button" type="button">
