@@ -68,8 +68,8 @@ function makeFighter(side, ballId) {
     x: side === "left" ? 178 : 782,
     y: canvas.height / 2,
     radius: 48,
-    vx: (movingRight ? 1 : -1) * 58,
-    vy: side === "left" ? 24 : -24,
+    vx: (movingRight ? 1 : -1) * 84,
+    vy: side === "left" ? 34 : -34,
     heading: 0,
     turnTimer: 2 + Math.random() * 13,
     contactFlash: 0,
@@ -296,7 +296,7 @@ function update(now) {
 
       if (fighter.turnTimer <= 0) {
         const boosted = fighter.moveSpeedUntil > match.elapsed;
-        const speed = (58 + Math.random() * 24) * (boosted ? 1.35 : 1);
+        const speed = (82 + Math.random() * 28) * (boosted ? 1.35 : 1);
         const towardCenter = fighter.side === "left" ? 1 : -1;
         const horizontalTarget = towardCenter * (0.4 + Math.random() * 0.6);
         const angle = Math.atan2((Math.random() - 0.5) * 1.3, horizontalTarget);
