@@ -95,8 +95,8 @@ function makeFighter(side, ballId) {
     x: side === "left" ? 178 : 782,
     y: canvas.height / 2,
     radius: 48,
-    vx: (movingRight ? 1 : -1) * 84,
-    vy: side === "left" ? 34 : -34,
+    vx: (movingRight ? 1 : -1) * 126,
+    vy: side === "left" ? 51 : -51,
     heading: 0,
     turnTimer: drawMovementSeconds(),
     contactFlash: 0,
@@ -302,7 +302,11 @@ function spawnPowerup() {
     radius: 24,
     age: 0,
   });
-  match.nextPowerup = 9000 + Math.random() * 6000;
+  const elapsedSeconds = match.elapsed / 1000;
+  const speedScale = Math.min(1, elapsedSeconds / 60);
+  const minimumDelay = 8000 - speedScale * 5000;
+  const randomDelay = 4000 - speedScale * 1000;
+  match.nextPowerup = minimumDelay + Math.random() * randomDelay;
 }
 
 function applyPowerup(fighter, powerup) {
