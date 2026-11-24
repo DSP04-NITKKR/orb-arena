@@ -108,6 +108,7 @@ function makeFighter(side, ballId) {
     nextThrow: 350,
     ultimateCharge: 0,
     ultActive: false,
+    ultimateCooldownUntil: 0,
     shield: 0,
     contactDamageUntil: 0,
     damageBoostUntil: 0,
@@ -172,6 +173,7 @@ function fireUltimate(fighter, opponent) {
   if (fighter.ultimateCharge < 100 || fighter.ultActive) return;
 
   fighter.ultActive = true;
+  fighter.ultimateCooldownUntil = match.elapsed + 1200;
   fighter.ultimateCharge = 0;
   if (fighter.ball.id === "dagger") fighter.successfulHits = 0;
   updateUltimateUI(fighter);
@@ -222,7 +224,6 @@ function fireUltimate(fighter, opponent) {
   setTimeout(() => {
     if (match && !match.ended) roundLabel.textContent = "FIGHT";
   }, 900);
-  fighter.ultActive = false;
 }
 
 function updateUltimateUI(fighter) {
@@ -394,6 +395,9 @@ function update(now) {
     for (const fighter of [match.left, match.right]) {
       fighter.flash = Math.max(0, fighter.flash - delta * 4);
       fighter.contactFlash = Math.max(0, fighter.contactFlash - delta * 5);
+      if (fighter.ultActive && match.elapsed >= fighter.ultimateCooldownUntil) {
+        fighter.ultActive = false;
+      }
       if (fighter.ball.id === "spikes") {
         fighter.ultimateCharge = Math.min(
           100,
@@ -402,7 +406,7 @@ function update(now) {
       }
       updateUltimateUI(fighter);
 
-      if (fighter.ultimateCharge >= 100) {
+      if (fighter.ultimateCharge >= 100 && !fighter.ultActive) {
         const opponent = fighter.side === "left" ? match.right : match.left;
         fireUltimate(fighter, opponent);
       }
