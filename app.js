@@ -32,7 +32,7 @@ const BALLS = {
     throwInterval: 0,
     projectileSpeed: 520,
     contactDamage: 14,
-    axeDamage: 12,
+    axeDamage: 15,
     ultimateName: "Future Step",
     ultimateDescription: "Teleports to where it will be in 5 seconds",
     ultimateChargePerSecond: 100 / 8,
@@ -104,8 +104,15 @@ function makeFighter(side, ballId) {
   const movingRight = side === "left";
   const daggerHorizontalSpeed = 150;
   const daggerVerticalSpeed = 61;
-  const initialSpeed = ball.id === "spikes" ? daggerHorizontalSpeed * 2 : daggerHorizontalSpeed;
-  const initialVerticalSpeed = ball.id === "spikes" ? daggerVerticalSpeed * 2 : daggerVerticalSpeed;
+  let initialSpeed = daggerHorizontalSpeed;
+  let initialVerticalSpeed = daggerVerticalSpeed;
+  if (ball.id === "spikes") {
+    initialSpeed *= 2;
+    initialVerticalSpeed *= 2;
+  } else if (ball.id === "axe") {
+    initialSpeed = daggerHorizontalSpeed * 1.25;
+    initialVerticalSpeed = daggerVerticalSpeed * 1.25;
+  }
   return {
     side,
     ball,
@@ -296,6 +303,13 @@ function createImpact(x, y, color) {
   }
 }
 
+function normalizeVelocityMagnitude(fighter, magnitude) {
+  const speed = Math.hypot(fighter.vx, fighter.vy);
+  if (speed <= 0) return;
+  fighter.vx = (fighter.vx / speed) * magnitude;
+  fighter.vy = (fighter.vy / speed) * magnitude;
+}
+
 function separateFighters(a, b) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
@@ -459,21 +473,29 @@ function update(now) {
       fighter.heading = Math.atan2(fighter.vy, fighter.vx);
 
       if (fighter.x - fighter.radius < 24) {
+        const speed = Math.hypot(fighter.vx, fighter.vy);
         fighter.x = 24 + fighter.radius;
         fighter.vx = Math.abs(fighter.vx);
         fighter.vy += (canvas.height / 2 - fighter.y) * 0.018;
+        normalizeVelocityMagnitude(fighter, speed);
       } else if (fighter.x + fighter.radius > canvas.width - 24) {
+        const speed = Math.hypot(fighter.vx, fighter.vy);
         fighter.x = canvas.width - 24 - fighter.radius;
         fighter.vx = -Math.abs(fighter.vx);
         fighter.vy += (canvas.height / 2 - fighter.y) * 0.018;
+        normalizeVelocityMagnitude(fighter, speed);
       }
 
       if (fighter.y - fighter.radius < 24) {
+        const speed = Math.hypot(fighter.vx, fighter.vy);
         fighter.y = 24 + fighter.radius;
         fighter.vy = Math.abs(fighter.vy);
+        normalizeVelocityMagnitude(fighter, speed);
       } else if (fighter.y + fighter.radius > canvas.height - 24) {
+        const speed = Math.hypot(fighter.vx, fighter.vy);
         fighter.y = canvas.height - 24 - fighter.radius;
         fighter.vy = -Math.abs(fighter.vy);
+        normalizeVelocityMagnitude(fighter, speed);
       }
 
       fighter.nextThrow -= delta * 1000;
@@ -829,7 +851,7 @@ const BALL_DETAILS = {
     name: "Axe Ball",
     role: "Orbiting weapon",
     description: "Rotates an axe for heavy close-range hits and teleports to its 5-second future position.",
-    attack: "12 axe",
+    attack: "15 axe",
     health: "230",
     ultimate: "8 sec",
   },
