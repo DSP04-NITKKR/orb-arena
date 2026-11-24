@@ -94,7 +94,7 @@ h1 {
   min-height: 410px;
   margin-top: 36px;
   display: grid;
-  grid-template-columns: 82px 72px minmax(300px, 1fr) 220px;
+  grid-template-columns: 170px minmax(300px, 1fr) 170px;
   overflow: hidden;
   border: 1px solid rgba(140, 228, 255, 0.14);
   border-radius: 16px;
@@ -103,14 +103,48 @@ h1 {
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
 }
 
-.fighter-tabs,
-.ball-rail {
+.side-selector {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
   border-right: 1px solid rgba(140, 228, 255, 0.09);
-  padding: 18px 10px;
+  padding: 22px 16px;
+}
+
+.side-selector p {
+  margin: 0 0 4px;
+  color: #78cfe9;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.side-selector strong {
+  margin-top: 2px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.side-ball {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(140, 228, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(5, 10, 17, 0.55);
+  cursor: pointer;
+}
+
+.side-ball.selected {
+  border-color: #86d9ef;
+  box-shadow: 0 0 22px rgba(119, 208, 234, 0.22);
+}
+
+.right-side-selector {
+  border-right: 0;
+  border-left: 1px solid rgba(140, 228, 255, 0.09);
 }
 
 .fighter-tab {
@@ -577,12 +611,10 @@ h1 {
   .setup-screen { padding-top: 28px; }
   .agent-select {
     min-height: 430px;
-    grid-template-columns: 58px 62px 1fr;
+    grid-template-columns: 94px 1fr 94px;
   }
-  .fighter-tabs { padding: 12px 6px; }
-  .fighter-tab { width: 46px; height: 52px; }
-  .ball-rail { padding: 12px 5px; }
-  .ball-portrait { width: 48px; height: 48px; }
+  .side-selector { padding: 14px 8px; }
+  .side-ball { width: 56px; height: 56px; }
   .ball-detail {
     grid-template-columns: 1fr;
     align-content: center;

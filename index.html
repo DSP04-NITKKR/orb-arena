@@ -23,24 +23,15 @@
         </div>
 
         <div class="agent-select">
-          <aside class="fighter-tabs">
-            <button id="leftTab" class="fighter-tab active" type="button" data-side="left">
-              <span>1</span>
-              <strong>Left</strong>
-            </button>
-            <button id="rightTab" class="fighter-tab" type="button" data-side="right">
-              <span>2</span>
-              <strong>Right</strong>
-            </button>
-          </aside>
-
-          <aside class="ball-rail" aria-label="Ball roster">
-            <button class="ball-portrait selected" type="button" aria-label="Select Dagger Ball" data-ball="dagger">
+          <aside class="side-selector left-side-selector" aria-label="Left fighter selection">
+            <p>Left fighter</p>
+            <button class="side-ball selected" type="button" aria-label="Select Dagger Ball for Left" data-side="left" data-ball="dagger">
               <span class="portrait-mini dagger-ball"></span>
             </button>
-            <button class="ball-portrait" type="button" aria-label="Select Spikes Ball" data-ball="spikes">
+            <button class="side-ball" type="button" aria-label="Select Spikes Ball for Left" data-side="left" data-ball="spikes">
               <span class="portrait-mini spikes-ball">◆</span>
             </button>
+            <strong id="leftSideName">Dagger Ball</strong>
           </aside>
 
           <article class="ball-detail">
@@ -61,14 +52,15 @@
             </div>
           </article>
 
-          <aside class="slot-preview">
-            <p id="slotLabel">Left fighter</p>
-            <div class="slot-preview-orb">
-              <span id="slotBall" class="detail-orb dagger-ball">
-                <span class="detail-face"><i></i><i></i></span>
-              </span>
-            </div>
-            <strong id="slotName">Dagger Ball</strong>
+          <aside class="side-selector right-side-selector" aria-label="Right fighter selection">
+            <p>Right fighter</p>
+            <button class="side-ball selected" type="button" aria-label="Select Dagger Ball for Right" data-side="right" data-ball="dagger">
+              <span class="portrait-mini dagger-ball"></span>
+            </button>
+            <button class="side-ball" type="button" aria-label="Select Spikes Ball for Right" data-side="right" data-ball="spikes">
+              <span class="portrait-mini spikes-ball">◆</span>
+            </button>
+            <strong id="rightSideName">Dagger Ball</strong>
           </aside>
         </div>
 

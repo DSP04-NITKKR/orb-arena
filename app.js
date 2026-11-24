@@ -73,7 +73,6 @@ let lastTime = 0;
 let match = null;
 let selectedLeftBall = "dagger";
 let selectedRightBall = "dagger";
-let activeSelectionSide = "left";
 
 const MOVEMENT_DRAW = [];
 for (let seconds = 2; seconds <= 15; seconds += 1) {
@@ -720,16 +719,6 @@ const BALL_DETAILS = {
   },
 };
 
-function setSelectionSide(side) {
-  activeSelectionSide = side;
-  document.querySelectorAll(".fighter-tab").forEach((tab) => {
-    tab.classList.toggle("active", tab.dataset.side === side);
-  });
-  document.querySelector("#slotLabel").textContent = `${side === "left" ? "Left" : "Right"} fighter`;
-  const ballId = side === "left" ? selectedLeftBall : selectedRightBall;
-  showBallDetails(ballId);
-}
-
 function showBallDetails(ballId) {
   const details = BALL_DETAILS[ballId];
   document.querySelector("#detailName").textContent = details.name;
@@ -738,29 +727,24 @@ function showBallDetails(ballId) {
   document.querySelector("#detailAttack").textContent = details.attack;
   document.querySelector("#detailHealth").textContent = details.health;
   document.querySelector("#detailUltimate").textContent = details.ultimate;
-  document.querySelector("#slotName").textContent = details.name;
-
   const detailOrb = document.querySelector("#detailBall");
-  const slotOrb = document.querySelector("#slotBall");
   detailOrb.className = `detail-orb ${ballId === "spikes" ? "spikes-ball" : "dagger-ball"}`;
-  slotOrb.className = `detail-orb ${ballId === "spikes" ? "spikes-ball" : "dagger-ball"}`;
   detailOrb.innerHTML = ballId === "spikes" ? '<span class="detail-spike">◆</span>' : '<span class="detail-face"><i></i><i></i></span>';
-  slotOrb.innerHTML = ballId === "spikes" ? '<span class="detail-spike">◆</span>' : '<span class="detail-face"><i></i><i></i></span>';
-
-  document.querySelectorAll(".ball-portrait").forEach((portrait) => {
-    portrait.classList.toggle("selected", portrait.dataset.ball === ballId);
-  });
 }
 
-document.querySelectorAll(".fighter-tab").forEach((tab) => {
-  tab.addEventListener("click", () => setSelectionSide(tab.dataset.side));
-});
-
-document.querySelectorAll(".ball-portrait").forEach((portrait) => {
-  portrait.addEventListener("click", () => {
-    const ballId = portrait.dataset.ball;
-    if (activeSelectionSide === "left") selectedLeftBall = ballId;
+document.querySelectorAll(".side-ball").forEach((button) => {
+  button.addEventListener("click", () => {
+    const side = button.dataset.side;
+    const ballId = button.dataset.ball;
+    if (side === "left") selectedLeftBall = ballId;
     else selectedRightBall = ballId;
+
+    document.querySelectorAll(`.side-ball[data-side="${side}"]`).forEach((option) => {
+      option.classList.toggle("selected", option === button);
+    });
+
+    const sideName = document.querySelector(side === "left" ? "#leftSideName" : "#rightSideName");
+    sideName.textContent = BALL_DETAILS[ballId].name;
     showBallDetails(ballId);
   });
 });
