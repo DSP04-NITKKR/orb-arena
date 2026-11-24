@@ -25,6 +25,7 @@ let match = null;
 
 function makeFighter(side, ballId) {
   const ball = BALLS[ballId];
+  const movingRight = side === "left";
   return {
     side,
     ball,
@@ -32,6 +33,11 @@ function makeFighter(side, ballId) {
     x: side === "left" ? 178 : 782,
     y: canvas.height / 2,
     radius: 48,
+    vx: (movingRight ? 1 : -1) * 58,
+    vy: side === "left" ? 24 : -24,
+    heading: 0,
+    turnTimer: 0.8 + Math.random() * 1.2,
+    contactFlash: 0,
     flash: 0,
     nextThrow: 350,
   };
@@ -61,7 +67,11 @@ function startMatch() {
 
 function throwDagger(fighter, opponent) {
   const direction = fighter.side === "left" ? 1 : -1;
-  const angle = Math.atan2(opponent.y - fighter.y, opponent.x - fighter.x);
+  const distance = Math.hypot(opponent.x - fighter.x, opponent.y - fighter.y);
+  const travelTime = distance / fighter.ball.projectileSpeed;
+  const aimX = opponent.x + opponent.vx * travelTime * 0.52;
+  const aimY = opponent.y + opponent.vy * travelTime * 0.52;
+  const angle = Math.atan2(aimY - fighter.y, aimX - fighter.x);
   match.projectiles.push({
     x: fighter.x + direction * 50,
     y: fighter.y,
@@ -88,6 +98,36 @@ function createImpact(x, y, color) {
   }
 }
 
+function separateFighters(a, b) {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const distance = Math.hypot(dx, dy);
+  const minimumDistance = a.radius + b.radius - 12;
+
+  if (distance > 0 && distance < minimumDistance) {
+    const nx = dx / distance;
+    const ny = dy / distance;
+    const overlap = (minimumDistance - distance) / 2;
+
+    a.x -= nx * overlap;
+    a.y -= ny * overlap;
+    b.x += nx * overlap;
+    b.y += ny * overlap;
+
+    const relativeVelocity = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+    if (relativeVelocity < 0) {
+      const impulse = -relativeVelocity * 0.65;
+      a.vx -= nx * impulse;
+      a.vy -= ny * impulse;
+      b.vx += nx * impulse;
+      b.vy += ny * impulse;
+    }
+
+    a.contactFlash = 1;
+    b.contactFlash = 1;
+  }
+}
+
 function update(now) {
   const delta = Math.min((now - lastTime) / 1000, 0.033);
   lastTime = now;
@@ -97,6 +137,39 @@ function update(now) {
 
     for (const fighter of [match.left, match.right]) {
       fighter.flash = Math.max(0, fighter.flash - delta * 4);
+      fighter.contactFlash = Math.max(0, fighter.contactFlash - delta * 5);
+      fighter.turnTimer -= delta;
+
+      if (fighter.turnTimer <= 0) {
+        const speed = 58 + Math.random() * 24;
+        const towardCenter = fighter.side === "left" ? 1 : -1;
+        const horizontalTarget = towardCenter * (0.4 + Math.random() * 0.6);
+        const angle = Math.atan2((Math.random() - 0.5) * 1.3, horizontalTarget);
+        fighter.vx = Math.cos(angle) * speed;
+        fighter.vy = Math.sin(angle) * speed;
+        fighter.turnTimer = 0.9 + Math.random() * 1.5;
+      }
+
+      fighter.x += fighter.vx * delta;
+      fighter.y += fighter.vy * delta;
+      fighter.heading = Math.atan2(fighter.vy, fighter.vx);
+
+      if (fighter.x - fighter.radius < 24) {
+        fighter.x = 24 + fighter.radius;
+        fighter.vx = Math.abs(fighter.vx);
+      } else if (fighter.x + fighter.radius > canvas.width - 24) {
+        fighter.x = canvas.width - 24 - fighter.radius;
+        fighter.vx = -Math.abs(fighter.vx);
+      }
+
+      if (fighter.y - fighter.radius < 24) {
+        fighter.y = 24 + fighter.radius;
+        fighter.vy = Math.abs(fighter.vy);
+      } else if (fighter.y + fighter.radius > canvas.height - 24) {
+        fighter.y = canvas.height - 24 - fighter.radius;
+        fighter.vy = -Math.abs(fighter.vy);
+      }
+
       fighter.nextThrow -= delta * 1000;
 
       if (fighter.nextThrow <= 0) {
@@ -105,6 +178,8 @@ function update(now) {
         fighter.nextThrow = fighter.ball.throwInterval;
       }
     }
+
+    separateFighters(match.left, match.right);
 
     for (const projectile of match.projectiles) {
       projectile.x += projectile.vx * delta;
