@@ -21,7 +21,7 @@ const BALLS = {
     contactDamage: 18,
     ultimateName: "Spike Burst",
     ultimateDescription: "Throws spikes in every direction",
-    ultimateChargePerSecond: 100 / 12,
+    ultimateChargePerSecond: 10,
     ultimateChargeHits: 0,
   },
 };
@@ -133,7 +133,7 @@ function startMatch() {
     impactParticles: [],
     powerups: [],
     powerupLabels: [],
-    nextPowerup: 7000,
+    nextPowerup: 4500,
     elapsed: 0,
     ended: false,
   };
@@ -250,7 +250,7 @@ function updateMatchIdentity(fighter) {
   mini.className = `mini-ball ${fighter.ball.id === "spikes" ? "spikes-ball" : "dagger-ball"}${isLeft ? "" : " purple"}`;
   descriptionName.textContent = fighter.ball.name;
   descriptionText.textContent = fighter.ball.id === "spikes"
-    ? "18 damage on touch · Spike Burst charges over 12 sec"
+    ? "18 damage on touch · Spike Burst charges over 10 sec"
     : "Dagger every 1.8 sec · Dagger Storm charges from 5 successful hits";
 }
 
@@ -345,8 +345,8 @@ function spawnPowerup() {
   });
   const elapsedSeconds = match.elapsed / 1000;
   const speedScale = Math.min(1, elapsedSeconds / 60);
-  const minimumDelay = 8000 - speedScale * 5000;
-  const randomDelay = 4000 - speedScale * 1000;
+  const minimumDelay = 4000 - speedScale * 2000;
+  const randomDelay = 3000 - speedScale * 1000;
   match.nextPowerup = minimumDelay + Math.random() * randomDelay;
 }
 
@@ -744,7 +744,7 @@ const BALL_DETAILS = {
     description: "A high-contact attacker that deals heavy damage when colliding and bursts spikes in every direction.",
     attack: "18 touch",
     health: "220",
-    ultimate: "12 sec",
+    ultimate: "10 sec",
   },
 };
 
