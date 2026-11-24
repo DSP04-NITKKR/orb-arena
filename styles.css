@@ -60,7 +60,7 @@ button { font: inherit; }
 .text-button:hover { color: #d7f3ff; }
 
 .setup-screen {
-  max-width: 760px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: clamp(36px, 8vh, 76px) 0 40px;
 }
@@ -92,7 +92,7 @@ h1 {
 
 .agent-select {
   width: 100%;
-  min-height: 410px;
+  min-height: 460px;
   margin-top: 36px;
   display: grid;
   grid-template-columns: 170px 1fr 170px;
@@ -255,8 +255,8 @@ h1 {
 }
 
 .fighter-detail-panel .detail-orb {
-  width: 150px;
-  height: 150px;
+  width: 190px;
+  height: 190px;
   margin: 4px 0;
 }
 

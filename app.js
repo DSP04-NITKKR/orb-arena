@@ -722,12 +722,26 @@ const BALL_DETAILS = {
 function showSideDetails(side, ballId) {
   const details = BALL_DETAILS[ballId];
   const prefix = side === "left" ? "left" : "right";
-  document.querySelector(`#${prefix}DetailRole`).textContent = details.role;
-  document.querySelector(`#${prefix}DetailName`).textContent = details.name;
-  document.querySelector(`#${prefix}DetailDescription`).textContent = details.description;
+  const role = document.querySelector(`#${prefix}DetailRole`);
+  const name = document.querySelector(`#${prefix}DetailName`);
+  const description = document.querySelector(`#${prefix}DetailDescription`);
+  if (role) role.textContent = details.role;
+  if (name) name.textContent = details.name;
+  if (description) description.textContent = details.description;
   const detailOrb = document.querySelector(`#${prefix}DetailBall`);
-  detailOrb.className = `detail-orb ${ballId === "spikes" ? "spikes-ball" : "dagger-ball"}`;
-  detailOrb.innerHTML = ballId === "spikes" ? '<span class="detail-spike">◆</span>' : '<span class="detail-face"><i></i><i></i></span>';
+  if (detailOrb) {
+    detailOrb.className = `detail-orb ${ballId === "spikes" ? "spikes-ball" : "dagger-ball"}`;
+    detailOrb.innerHTML = ballId === "spikes" ? '<span class="detail-spike">◆</span>' : '<span class="detail-face"><i></i><i></i></span>';
+  }
+}
+
+function updateSelectionButtonStates(side) {
+  const selectedBall = side === "left" ? selectedLeftBall : selectedRightBall;
+  document.querySelectorAll(`.side-ball[data-side="${side}"]`).forEach((button) => {
+    const selected = button.dataset.ball === selectedBall;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
 }
 
 document.querySelectorAll(".side-ball").forEach((button) => {
@@ -744,11 +758,14 @@ document.querySelectorAll(".side-ball").forEach((button) => {
     const sideName = document.querySelector(side === "left" ? "#leftSideName" : "#rightSideName");
     sideName.textContent = BALL_DETAILS[ballId].name;
     showSideDetails(side, ballId);
+    updateSelectionButtonStates(side);
   });
 });
 
 showSideDetails("left", "dagger");
 showSideDetails("right", "dagger");
+updateSelectionButtonStates("left");
+updateSelectionButtonStates("right");
 document.querySelector("#rematchButton").addEventListener("click", startMatch);
 document.querySelector("#changeButton").addEventListener("click", () => {
   cancelAnimationFrame(animationFrame);
