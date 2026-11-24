@@ -284,13 +284,27 @@ function separateFighters(a, b) {
     b.x += nx * overlap;
     b.y += ny * overlap;
 
-    const relativeVelocity = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
-    if (relativeVelocity < 0) {
-      const impulse = -relativeVelocity * 0.65;
-      a.vx -= nx * impulse;
-      a.vy -= ny * impulse;
-      b.vx += nx * impulse;
-      b.vy += ny * impulse;
+    const aSpeed = Math.hypot(a.vx, a.vy);
+    const bSpeed = Math.hypot(b.vx, b.vy);
+    const aNormal = a.vx * nx + a.vy * ny;
+    const bNormal = b.vx * nx + b.vy * ny;
+
+    if (aNormal > 0 || bNormal < 0) {
+      a.vx -= 2 * aNormal * nx;
+      a.vy -= 2 * aNormal * ny;
+      b.vx -= 2 * bNormal * nx;
+      b.vy -= 2 * bNormal * ny;
+
+      const aNewSpeed = Math.hypot(a.vx, a.vy);
+      const bNewSpeed = Math.hypot(b.vx, b.vy);
+      if (aNewSpeed > 0) {
+        a.vx = (a.vx / aNewSpeed) * aSpeed;
+        a.vy = (a.vy / aNewSpeed) * aSpeed;
+      }
+      if (bNewSpeed > 0) {
+        b.vx = (b.vx / bNewSpeed) * bSpeed;
+        b.vy = (b.vy / bNewSpeed) * bSpeed;
+      }
     }
 
     a.contactFlash = 1;
