@@ -203,18 +203,20 @@ function fireUltimate(fighter, opponent) {
     }
   }
 
-  for (const offset of spread) {
-    const angle = baseAngle + offset;
-    match.projectiles.push({
-      x: fighter.x + Math.cos(baseAngle) * 50,
-      y: fighter.y + Math.sin(baseAngle) * 50,
-      vx: Math.cos(angle) * fighter.ball.projectileSpeed * 1.08,
-      vy: Math.sin(angle) * fighter.ball.projectileSpeed * 1.08,
-      angle,
-      owner: fighter.side,
-      damage: 8,
-      ultimate: true,
-    });
+  if (fighter.ball.id === "dagger") {
+    for (const offset of spread) {
+      const angle = baseAngle + offset;
+      match.projectiles.push({
+        x: fighter.x + Math.cos(baseAngle) * 50,
+        y: fighter.y + Math.sin(baseAngle) * 50,
+        vx: Math.cos(angle) * fighter.ball.projectileSpeed * 1.08,
+        vy: Math.sin(angle) * fighter.ball.projectileSpeed * 1.08,
+        angle,
+        owner: fighter.side,
+        damage: 8,
+        ultimate: true,
+      });
+    }
   }
 
   setTimeout(() => {
