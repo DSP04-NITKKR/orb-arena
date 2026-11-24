@@ -658,14 +658,18 @@ document.querySelectorAll(".ball-card[data-side][data-ball], #leftBall, #rightBa
     if (side === "left") selectedLeftBall = ballId;
     if (side === "right") selectedRightBall = ballId;
 
-    document.querySelectorAll(`.ball-card[data-side="${side}"], #${side}Ball`).forEach((option) => {
-      option.classList.toggle("selected", option === card);
-      option.setAttribute("aria-pressed", option === card ? "true" : "false");
-    });
+    const options = side === "left"
+      ? [document.querySelector("#leftBall"), document.querySelector(".spikes-card[data-side='left']")]
+      : [document.querySelector("#rightBall"), document.querySelector(".spikes-card[data-side='right']")];
 
-    const check = card.querySelector(".check");
-    if (!check) {
-      card.insertAdjacentHTML("beforeend", '<span class="check">✓</span>');
+    for (const option of options) {
+      const selected = option === card;
+      option.classList.toggle("selected", selected);
+      option.setAttribute("aria-pressed", selected ? "true" : "false");
+      option.querySelector(".check")?.remove();
+      if (selected) {
+        option.insertAdjacentHTML("beforeend", '<span class="check">✓</span>');
+      }
     }
   });
 });
