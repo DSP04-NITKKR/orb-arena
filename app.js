@@ -719,15 +719,13 @@ const BALL_DETAILS = {
   },
 };
 
-function showBallDetails(ballId) {
+function showSideDetails(side, ballId) {
   const details = BALL_DETAILS[ballId];
-  document.querySelector("#detailName").textContent = details.name;
-  document.querySelector("#detailRole").textContent = details.role;
-  document.querySelector("#detailDescription").textContent = details.description;
-  document.querySelector("#detailAttack").textContent = details.attack;
-  document.querySelector("#detailHealth").textContent = details.health;
-  document.querySelector("#detailUltimate").textContent = details.ultimate;
-  const detailOrb = document.querySelector("#detailBall");
+  const prefix = side === "left" ? "left" : "right";
+  document.querySelector(`#${prefix}DetailRole`).textContent = details.role;
+  document.querySelector(`#${prefix}DetailName`).textContent = details.name;
+  document.querySelector(`#${prefix}DetailDescription`).textContent = details.description;
+  const detailOrb = document.querySelector(`#${prefix}DetailBall`);
   detailOrb.className = `detail-orb ${ballId === "spikes" ? "spikes-ball" : "dagger-ball"}`;
   detailOrb.innerHTML = ballId === "spikes" ? '<span class="detail-spike">◆</span>' : '<span class="detail-face"><i></i><i></i></span>';
 }
@@ -745,9 +743,12 @@ document.querySelectorAll(".side-ball").forEach((button) => {
 
     const sideName = document.querySelector(side === "left" ? "#leftSideName" : "#rightSideName");
     sideName.textContent = BALL_DETAILS[ballId].name;
-    showBallDetails(ballId);
+    showSideDetails(side, ballId);
   });
 });
+
+showSideDetails("left", "dagger");
+showSideDetails("right", "dagger");
 document.querySelector("#rematchButton").addEventListener("click", startMatch);
 document.querySelector("#changeButton").addEventListener("click", () => {
   cancelAnimationFrame(animationFrame);

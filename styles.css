@@ -217,11 +217,47 @@ h1 {
 
 .ball-detail {
   display: grid;
-  grid-template-columns: 46% 54%;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
   border-left: 1px solid rgba(140, 228, 255, 0.09);
   border-right: 1px solid rgba(140, 228, 255, 0.09);
   padding: 28px 24px;
+}
+
+.fighter-detail-panel {
+  min-width: 0;
+  min-height: 310px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 14px;
+  text-align: center;
+}
+
+.fighter-detail-panel + .fighter-detail-panel {
+  border-left: 1px solid rgba(140, 228, 255, 0.09);
+}
+
+.fighter-detail-panel h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+
+.fighter-detail-panel > p:not(.detail-role) {
+  max-width: 180px;
+  margin: 0;
+  color: #9eb2c1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.fighter-detail-panel .detail-orb {
+  width: 150px;
+  height: 150px;
+  margin: 4px 0;
 }
 
 .detail-visual { display: grid; place-items: center; }
