@@ -137,9 +137,11 @@ function makeFighter(side, ballId) {
     moveSpeedUntil: 0,
     successfulHits: 0,
     axeAngle: 0,
+    axeSpinDirection: 1,
     pickupText: "",
     pickupTextUntil: 0,
     axeDamageUntil: 0,
+    axeCollisionFlipUntil: 0,
   };
 }
 
@@ -352,6 +354,15 @@ function separateFighters(a, b) {
     a.contactFlash = 1;
     b.contactFlash = 1;
 
+    if (a.ball.id === "axe" && match.elapsed >= (a.axeCollisionFlipUntil || 0)) {
+      a.axeSpinDirection *= -1;
+      a.axeCollisionFlipUntil = match.elapsed + 400;
+    }
+    if (b.ball.id === "axe" && match.elapsed >= (b.axeCollisionFlipUntil || 0)) {
+      b.axeSpinDirection *= -1;
+      b.axeCollisionFlipUntil = match.elapsed + 400;
+    }
+
     if (a.ball.id === "spikes") damageOnContact(a, b);
     if (b.ball.id === "spikes") damageOnContact(b, a);
   }
@@ -436,7 +447,7 @@ function update(now) {
     for (const fighter of [match.left, match.right]) {
       fighter.flash = Math.max(0, fighter.flash - delta * 4);
       fighter.contactFlash = Math.max(0, fighter.contactFlash - delta * 5);
-      fighter.axeAngle = (fighter.axeAngle || 0) + delta * 3.8;
+      fighter.axeAngle = (fighter.axeAngle || 0) + delta * 3.8 * (fighter.axeSpinDirection || 1);
       if (fighter.ultActive && match.elapsed >= fighter.ultimateCooldownUntil) {
         fighter.ultActive = false;
       }
@@ -457,9 +468,7 @@ function update(now) {
 
       if (fighter.turnTimer <= 0) {
         const boosted = fighter.moveSpeedUntil > match.elapsed;
-        const baseSpeed = fighter.ball.id === "spikes" ? 196 : 98;
-        const randomSpeed = fighter.ball.id === "spikes" ? 68 : 34;
-        const speed = (baseSpeed + Math.random() * randomSpeed) * (boosted ? 1.5 : 1);
+        const speed = Math.hypot(fighter.vx, fighter.vy) * (boosted ? 1.5 : 1);
         const towardCenter = fighter.side === "left" ? 1 : -1;
         const horizontalTarget = towardCenter * (0.4 + Math.random() * 0.6);
         const angle = Math.atan2((Math.random() - 0.5) * 1.3, horizontalTarget);
@@ -478,12 +487,14 @@ function update(now) {
         fighter.vx = Math.abs(fighter.vx);
         fighter.vy += (canvas.height / 2 - fighter.y) * 0.018;
         normalizeVelocityMagnitude(fighter, speed);
+        if (fighter.ball.id === "axe") fighter.axeSpinDirection *= -1;
       } else if (fighter.x + fighter.radius > canvas.width - 24) {
         const speed = Math.hypot(fighter.vx, fighter.vy);
         fighter.x = canvas.width - 24 - fighter.radius;
         fighter.vx = -Math.abs(fighter.vx);
         fighter.vy += (canvas.height / 2 - fighter.y) * 0.018;
         normalizeVelocityMagnitude(fighter, speed);
+        if (fighter.ball.id === "axe") fighter.axeSpinDirection *= -1;
       }
 
       if (fighter.y - fighter.radius < 24) {
@@ -491,11 +502,13 @@ function update(now) {
         fighter.y = 24 + fighter.radius;
         fighter.vy = Math.abs(fighter.vy);
         normalizeVelocityMagnitude(fighter, speed);
+        if (fighter.ball.id === "axe") fighter.axeSpinDirection *= -1;
       } else if (fighter.y + fighter.radius > canvas.height - 24) {
         const speed = Math.hypot(fighter.vx, fighter.vy);
         fighter.y = canvas.height - 24 - fighter.radius;
         fighter.vy = -Math.abs(fighter.vy);
         normalizeVelocityMagnitude(fighter, speed);
+        if (fighter.ball.id === "axe") fighter.axeSpinDirection *= -1;
       }
 
       fighter.nextThrow -= delta * 1000;
@@ -524,6 +537,7 @@ function update(now) {
         const beforeSpeed = Math.hypot(fighter.vx, fighter.vy);
         fighter.vx = -fighter.vx;
         fighter.vy = -fighter.vy;
+        fighter.axeSpinDirection *= -1;
         normalizeVelocityMagnitude(fighter, beforeSpeed);
         if (opponent.shield > 0) {
           opponent.shield = 0;
