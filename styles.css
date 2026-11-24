@@ -95,7 +95,7 @@ h1 {
   min-height: 460px;
   margin-top: 36px;
   display: grid;
-  grid-template-columns: 170px 1fr 170px;
+  grid-template-columns: 190px 1fr 190px;
   overflow: hidden;
   border: 1px solid rgba(140, 228, 255, 0.14);
   border-radius: 16px;
@@ -105,8 +105,8 @@ h1 {
 }
 
 .side-selector {
-  width: 170px;
-  min-width: 170px;
+  width: 190px;
+  min-width: 190px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -149,6 +149,47 @@ h1 {
   border-color: #86d9ef;
   box-shadow: 0 0 22px rgba(119, 208, 234, 0.22);
 }
+
+.extra-ball-grid {
+  width: 150px;
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  gap: 7px;
+  justify-content: center;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.side-ball.compact {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+}
+
+.side-ball.compact .portrait-mini {
+  width: 32px;
+  height: 32px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #eefaff;
+}
+
+.portrait-mini.laser-ball { background: #4d72c4; }
+.portrait-mini.fire-ball { background: #b85b32; }
+.portrait-mini.vines-ball { background: #507e4a; }
+.portrait-mini.seed-ball { background: #9b8a45; }
+.portrait-mini.multishots-ball { background: #8a57a8; }
+.portrait-mini.electric-ball { background: #46a9bb; }
+.portrait-mini.multiplier-ball { background: #b19c3e; }
+.portrait-mini.gravity-ball { background: #685ba8; }
+.portrait-mini.mirror-ball { background: #79a7ae; }
+.portrait-mini.time-ball { background: #7d5ba8; }
+.portrait-mini.magnet-ball { background: #9a5570; }
+.portrait-mini.ice-ball { background: #70aeb9; }
+.portrait-mini.shield-ball { background: #9a8c58; }
+.portrait-mini.shadow-ball { background: #514b6f; }
+.portrait-mini.bomb-ball { background: #a84d3d; }
 
 .right-side-selector {
   border-right: 0;
@@ -293,6 +334,20 @@ h1 {
   color: #4a3029;
   font-size: 64px;
   filter: drop-shadow(0 5px 0 rgba(255, 239, 200, 0.28));
+}
+
+.detail-letter {
+  display: grid;
+  width: 86px;
+  height: 86px;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  color: #effaff;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 44px;
+  font-weight: 900;
+  box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.08);
 }
 .detail-role { margin: 0 0 6px; color: #78cfe9; font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; }
 .detail-copy h2 { margin: 0 0 10px; font-size: 28px; letter-spacing: -0.03em; }
@@ -670,11 +725,11 @@ h1 {
   .setup-screen { padding-top: 28px; }
   .agent-select {
     min-height: 390px;
-    grid-template-columns: 86px minmax(0, 1fr) 86px;
+    grid-template-columns: 96px minmax(0, 1fr) 96px;
   }
   .side-selector {
-    width: 86px;
-    min-width: 86px;
+    width: 96px;
+    min-width: 96px;
     padding: 12px 4px;
   }
   .side-ball { width: 50px; height: 50px; }

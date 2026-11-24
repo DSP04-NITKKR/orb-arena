@@ -38,6 +38,82 @@ const BALLS = {
     ultimateChargePerSecond: 100 / 8,
     ultimateChargeHits: 0,
   },
+  laser: {
+    id: "laser", name: "Laser Ball", maxHealth: 190, projectileDamage: 12,
+    throwInterval: 1900, projectileSpeed: 680, ultimateName: "Laser Net",
+    ultimateDescription: "Creates a net of cross-cutting lasers", ultimateChargePerSecond: 12,
+  },
+  fire: {
+    id: "fire", name: "Fire Ball", maxHealth: 210, projectileDamage: 9,
+    throwInterval: 1700, projectileSpeed: 470, ultimateName: "Inferno Ring",
+    ultimateDescription: "Launches a ring of fireballs", ultimateChargePerSecond: 11,
+  },
+  vines: {
+    id: "vines", name: "Vines Ball", maxHealth: 220, projectileDamage: 7,
+    throwInterval: 2100, projectileSpeed: 380, ultimateName: "Vine Snare",
+    ultimateDescription: "Deploys entangling vines across the arena", ultimateChargePerSecond: 10,
+  },
+  seed: {
+    id: "seed", name: "Seed Bomb Ball", maxHealth: 200, projectileDamage: 12,
+    throwInterval: 2200, projectileSpeed: 330, ultimateName: "Seedstorm",
+    ultimateDescription: "Drops a cluster of explosive seeds", ultimateChargePerSecond: 9,
+  },
+  multishots: {
+    id: "multishots", name: "Multishots Ball", maxHealth: 180, projectileDamage: 5,
+    throwInterval: 1900, projectileSpeed: 500, ultimateName: "Triple Torrent",
+    ultimateDescription: "Fires a wide torrent of shots", ultimateChargePerSecond: 10,
+  },
+  electric: {
+    id: "electric", name: "Electric Ball", maxHealth: 195, projectileDamage: 10,
+    throwInterval: 1600, projectileSpeed: 610, ultimateName: "Storm Grid",
+    ultimateDescription: "Creates an electrified arena grid", ultimateChargePerSecond: 11,
+  },
+  multiplier: {
+    id: "multiplier", name: "Multiplier Ball", maxHealth: 210, projectileDamage: 6,
+    throwInterval: 1800, projectileSpeed: 440, ultimateName: "Overdrive",
+    ultimateDescription: "Multiplies every active projectile", ultimateChargePerSecond: 10,
+  },
+  gravity: {
+    id: "gravity", name: "Gravity Ball", maxHealth: 215, projectileDamage: 8,
+    throwInterval: 2100, projectileSpeed: 360, ultimateName: "Gravity Vortex",
+    ultimateDescription: "Creates a pulling vortex", ultimateChargePerSecond: 10,
+  },
+  mirror: {
+    id: "mirror", name: "Mirror Ball", maxHealth: 205, projectileDamage: 8,
+    throwInterval: 1800, projectileSpeed: 460, ultimateName: "Reflection Pulse",
+    ultimateDescription: "Returns a wall of reflected shots", ultimateChargePerSecond: 10,
+  },
+  time: {
+    id: "time", name: "Time Ball", maxHealth: 190, projectileDamage: 9,
+    throwInterval: 2000, projectileSpeed: 440, ultimateName: "Time Freeze",
+    ultimateDescription: "Briefly freezes the opposing fighter", ultimateChargePerSecond: 10,
+  },
+  magnet: {
+    id: "magnet", name: "Magnet Ball", maxHealth: 220, projectileDamage: 7,
+    throwInterval: 1900, projectileSpeed: 400, ultimateName: "Magnetic Pull",
+    ultimateDescription: "Pulls every powerup toward the fighter", ultimateChargePerSecond: 10,
+  },
+  ice: {
+    id: "ice", name: "Ice Ball", maxHealth: 210, projectileDamage: 8,
+    throwInterval: 1800, projectileSpeed: 430, ultimateName: "Frost Ring",
+    ultimateDescription: "Creates a widening frost ring", ultimateChargePerSecond: 10,
+  },
+  shield: {
+    id: "shield", name: "Shield Ball", maxHealth: 260, projectileDamage: 0,
+    throwInterval: 0, projectileSpeed: 0, contactDamage: 11,
+    ultimateName: "Shield Shells", ultimateDescription: "Deploys rotating shield shells",
+    ultimateChargePerSecond: 10,
+  },
+  shadow: {
+    id: "shadow", name: "Shadow Ball", maxHealth: 200, projectileDamage: 7,
+    throwInterval: 1900, projectileSpeed: 480, ultimateName: "Shadow Swap",
+    ultimateDescription: "Swaps positions with the opponent", ultimateChargePerSecond: 10,
+  },
+  bomb: {
+    id: "bomb", name: "Bomb Ball", maxHealth: 210, projectileDamage: 12,
+    throwInterval: 2200, projectileSpeed: 300, ultimateName: "Blast Ring",
+    ultimateDescription: "Detonates a ring of delayed blasts", ultimateChargePerSecond: 10,
+  },
 };
 
 const POWERUPS = {
@@ -112,6 +188,12 @@ function makeFighter(side, ballId) {
   } else if (ball.id === "axe") {
     initialSpeed = daggerHorizontalSpeed * 1.25;
     initialVerticalSpeed = daggerVerticalSpeed * 1.25;
+  } else if (["laser", "electric", "shadow"].includes(ball.id)) {
+    initialSpeed *= 1.18;
+    initialVerticalSpeed *= 1.18;
+  } else if (["seed", "gravity", "shield"].includes(ball.id)) {
+    initialSpeed *= 0.85;
+    initialVerticalSpeed *= 0.85;
   }
   return {
     side,
@@ -142,6 +224,8 @@ function makeFighter(side, ballId) {
     pickupTextUntil: 0,
     axeDamageUntil: 0,
     axeCollisionFlipUntil: 0,
+    gravityUntil: 0,
+    timeFrozenUntil: 0,
   };
 }
 
@@ -181,17 +265,27 @@ function throwDagger(fighter, opponent) {
   const aimX = opponent.x + opponent.vx * travelTime * 0.52;
   const aimY = opponent.y + opponent.vy * travelTime * 0.52;
   const angle = Math.atan2(aimY - fighter.y, aimX - fighter.x);
-  match.projectiles.push({
-    x: fighter.x + direction * 50,
-    y: fighter.y,
-    vx: Math.cos(angle) * fighter.ball.projectileSpeed,
-    vy: Math.sin(angle) * fighter.ball.projectileSpeed,
-    angle,
-    owner: fighter.side,
-    damage: fighter.ball.projectileDamage,
-    regularDagger: true,
-    ultimate: false,
-  });
+  const offsets = fighter.ball.id === "multishots"
+    ? [-0.16, -0.08, 0, 0.08, 0.16]
+    : fighter.ball.id === "laser"
+      ? [-0.025, 0, 0.025]
+      : [0];
+
+  for (const offset of offsets) {
+    const projectileAngle = angle + offset;
+    match.projectiles.push({
+      x: fighter.x + direction * 50,
+      y: fighter.y,
+      vx: Math.cos(projectileAngle) * fighter.ball.projectileSpeed,
+      vy: Math.sin(projectileAngle) * fighter.ball.projectileSpeed,
+      angle: projectileAngle,
+      owner: fighter.side,
+      damage: fighter.ball.projectileDamage,
+      regularDagger: fighter.ball.id === "dagger",
+      ultimate: false,
+      projectileType: fighter.ball.id,
+    });
+  }
 }
 
 function fireUltimate(fighter, opponent) {
@@ -221,7 +315,7 @@ function fireUltimate(fighter, opponent) {
     createImpact(fighter.x, fighter.y, "#d9a06a");
   }
 
-  if (fighter.ball.id === "spikes" || fighter.ball.id === "axe") {
+  if (fighter.ball.id === "spikes") {
     for (let i = 0; i < 16; i += 1) {
       const angle = (Math.PI * 2 * i) / 16;
       match.projectiles.push({
@@ -250,6 +344,116 @@ function fireUltimate(fighter, opponent) {
         owner: fighter.side,
         damage: 8,
         ultimate: true,
+      });
+    }
+  }
+
+  if (fighter.ball.id === "laser") {
+    for (let i = 0; i < 12; i += 1) {
+      const angle = (Math.PI * 2 * i) / 12;
+      match.projectiles.push({
+        x: fighter.x, y: fighter.y,
+        vx: Math.cos(angle) * 520, vy: Math.sin(angle) * 520,
+        angle, owner: fighter.side, damage: 6, ultimate: true,
+        spike: false, laser: true,
+      });
+    }
+  } else if (fighter.ball.id === "fire") {
+    for (let i = 0; i < 12; i += 1) {
+      const angle = (Math.PI * 2 * i) / 12;
+      match.projectiles.push({
+        x: fighter.x, y: fighter.y,
+        vx: Math.cos(angle) * 390, vy: Math.sin(angle) * 390,
+        angle, owner: fighter.side, damage: 8, ultimate: true, fire: true,
+      });
+    }
+  } else if (fighter.ball.id === "vines") {
+    for (let i = -2; i <= 2; i += 1) {
+      const angle = baseAngle + i * 0.28;
+      match.projectiles.push({
+        x: fighter.x, y: fighter.y,
+        vx: Math.cos(angle) * 260, vy: Math.sin(angle) * 260,
+        angle, owner: fighter.side, damage: 7, ultimate: true, vine: true,
+      });
+    }
+  } else if (fighter.ball.id === "seed") {
+    for (let i = 0; i < 8; i += 1) {
+      const angle = baseAngle - 0.5 + i * 0.14;
+      match.projectiles.push({
+        x: fighter.x, y: fighter.y,
+        vx: Math.cos(angle) * 280, vy: Math.sin(angle) * 280,
+        angle, owner: fighter.side, damage: 12, ultimate: true, seed: true,
+      });
+    }
+  } else if (fighter.ball.id === "multishots") {
+    for (let i = -6; i <= 6; i += 1) {
+      const angle = baseAngle + i * 0.08;
+      match.projectiles.push({
+        x: fighter.x, y: fighter.y,
+        vx: Math.cos(angle) * 520, vy: Math.sin(angle) * 520,
+        angle, owner: fighter.side, damage: 5, ultimate: true, multishot: true,
+      });
+    }
+  } else if (fighter.ball.id === "electric") {
+    for (let i = 0; i < 8; i += 1) {
+      const angle = (Math.PI * 2 * i) / 8;
+      match.projectiles.push({
+        x: fighter.x, y: fighter.y,
+        vx: Math.cos(angle) * 560, vy: Math.sin(angle) * 560,
+        angle, owner: fighter.side, damage: 9, ultimate: true, electric: true,
+      });
+    }
+  } else if (fighter.ball.id === "multiplier") {
+    for (let i = 0; i < 10; i += 1) {
+      const angle = (Math.PI * 2 * i) / 10;
+      match.projectiles.push({
+        x: fighter.x, y: fighter.y,
+        vx: Math.cos(angle) * 430, vy: Math.sin(angle) * 430,
+        angle, owner: fighter.side, damage: 6, ultimate: true, multiplier: true,
+      });
+    }
+  } else if (fighter.ball.id === "gravity") {
+    fighter.gravityUntil = match.elapsed + 6000;
+  } else if (fighter.ball.id === "mirror") {
+    match.projectiles.forEach((projectile) => {
+      if (projectile.owner !== fighter.side) {
+        projectile.vx *= -1;
+        projectile.vy *= -1;
+        projectile.owner = fighter.side;
+      }
+    });
+  } else if (fighter.ball.id === "time") {
+    opponent.timeFrozenUntil = match.elapsed + 1800;
+  } else if (fighter.ball.id === "magnet") {
+    for (const powerup of match.powerups) {
+      powerup.x = fighter.x;
+      powerup.y = fighter.y;
+    }
+  } else if (fighter.ball.id === "ice") {
+    for (let i = 0; i < 10; i += 1) {
+      const angle = (Math.PI * 2 * i) / 10;
+      match.projectiles.push({
+        x: fighter.x, y: fighter.y,
+        vx: Math.cos(angle) * 350, vy: Math.sin(angle) * 350,
+        angle, owner: fighter.side, damage: 7, ultimate: true, ice: true,
+      });
+    }
+  } else if (fighter.ball.id === "shield") {
+    fighter.shield = 3;
+  } else if (fighter.ball.id === "shadow") {
+    const swapX = opponent.x;
+    const swapY = opponent.y;
+    opponent.x = fighter.x;
+    opponent.y = fighter.y;
+    fighter.x = swapX;
+    fighter.y = swapY;
+  } else if (fighter.ball.id === "bomb") {
+    for (let i = 0; i < 12; i += 1) {
+      const angle = (Math.PI * 2 * i) / 12;
+      match.projectiles.push({
+        x: fighter.x, y: fighter.y,
+        vx: Math.cos(angle) * 300, vy: Math.sin(angle) * 300,
+        angle, owner: fighter.side, damage: 11, ultimate: true, bomb: true,
       });
     }
   }
@@ -445,13 +649,14 @@ function update(now) {
     if (match.nextPowerup <= 0) spawnPowerup();
 
     for (const fighter of [match.left, match.right]) {
+      if (fighter.timeFrozenUntil > match.elapsed) continue;
       fighter.flash = Math.max(0, fighter.flash - delta * 4);
       fighter.contactFlash = Math.max(0, fighter.contactFlash - delta * 5);
       fighter.axeAngle = (fighter.axeAngle || 0) + delta * 3.8 * (fighter.axeSpinDirection || 1);
       if (fighter.ultActive && match.elapsed >= fighter.ultimateCooldownUntil) {
         fighter.ultActive = false;
       }
-      if (fighter.ball.id === "spikes" || fighter.ball.id === "axe") {
+      if (fighter.ball.id !== "dagger") {
         fighter.ultimateCharge = Math.min(
           100,
           fighter.ultimateCharge + delta * fighter.ball.ultimateChargePerSecond
@@ -513,7 +718,7 @@ function update(now) {
 
       fighter.nextThrow -= delta * 1000;
 
-      if (fighter.ball.id === "dagger" && fighter.nextThrow <= 0) {
+      if (fighter.ball.id !== "spikes" && fighter.ball.id !== "axe" && fighter.nextThrow <= 0) {
         const opponent = fighter.side === "left" ? match.right : match.left;
         throwDagger(fighter, opponent);
         const boosted = fighter.attackSpeedUntil > match.elapsed;
@@ -564,6 +769,14 @@ function update(now) {
     match.powerups = match.powerups.filter((powerup) => !powerup.collected);
 
     for (const projectile of match.projectiles) {
+      for (const gravityFighter of [match.left, match.right]) {
+        if (gravityFighter.ball.id !== "gravity" || gravityFighter.gravityUntil <= match.elapsed) continue;
+        const dx = gravityFighter.x - projectile.x;
+        const dy = gravityFighter.y - projectile.y;
+        const distance = Math.max(40, Math.hypot(dx, dy));
+        projectile.vx += (dx / distance) * 80 * delta;
+        projectile.vy += (dy / distance) * 80 * delta;
+      }
       projectile.x += projectile.vx * delta;
       projectile.y += projectile.vy * delta;
 
@@ -694,7 +907,13 @@ function draw() {
     ctx.save();
     ctx.translate(projectile.x, projectile.y);
     ctx.rotate(projectile.angle);
-    ctx.fillStyle = projectile.owner === "left" ? "#dffaff" : "#ead8ff";
+    const colorByType = {
+      laser: "#75aaff", fire: "#ff8a4c", vines: "#77b86d", seed: "#d6b85c",
+      multishots: "#e9a8ff", electric: "#75eaff", multiplier: "#f6ed78",
+      gravity: "#9b8cff", mirror: "#dffcff", time: "#d69cff", magnet: "#ff789f",
+      ice: "#9cecff", shield: "#f1df78", shadow: "#9c84c7", bomb: "#ff6a4d",
+    };
+    ctx.fillStyle = colorByType[projectile.projectileType] || (projectile.owner === "left" ? "#dffaff" : "#ead8ff");
     ctx.shadowColor = projectile.owner === "left" ? "#69d6f1" : "#b88ad9";
     ctx.shadowBlur = 12;
     ctx.beginPath();
@@ -761,6 +980,31 @@ function drawFighter(fighter) {
     base.addColorStop(0.48, "#777365");
     base.addColorStop(0.82, "#625e55");
     base.addColorStop(1, "#4b473f");
+  } else if (BALL_DETAILS[fighter.ball.id]) {
+    const palette = {
+      laser: ["#d9efff", "#79a8d8", "#4d72c4", "#263f73", "#17284e"],
+      fire: ["#ffe1ba", "#ff9a54", "#b85b32", "#7a3528", "#44231e"],
+      vines: ["#d8efc6", "#86bd73", "#507e4a", "#355d38", "#243e2b"],
+      seed: ["#f3e5a8", "#d1bc67", "#9b8a45", "#6f6034", "#493e27"],
+      multishots: ["#f1d7ff", "#b77fd1", "#8a57a8", "#5d3c75", "#3a294c"],
+      electric: ["#dcfbff", "#82dbe8", "#46a9bb", "#367d8b", "#254b58"],
+      multiplier: ["#fff7b5", "#e2d36b", "#b19c3e", "#7d6e35", "#4c4628"],
+      gravity: ["#d9d2ff", "#9a8ed0", "#685ba8", "#4a4077", "#302d4e"],
+      mirror: ["#efffff", "#afd7da", "#79a7ae", "#55777e", "#3a5358"],
+      time: ["#eadcff", "#a78bd2", "#7d5ba8", "#5a4477", "#382e50"],
+      magnet: ["#ffd7e4", "#bd7a95", "#9a5570", "#71404f", "#472b35"],
+      ice: ["#efffff", "#a6dce5", "#70aeb9", "#4d7d87", "#34545b"],
+      shield: ["#f4ecc2", "#c1b879", "#9a8c58", "#70643e", "#49432b"],
+      shadow: ["#d9d4ef", "#8177a1", "#514b6f", "#3d3657", "#29253b"],
+      bomb: ["#ffd1b5", "#c96d53", "#a84d3d", "#78372f", "#4b2824"],
+    }[fighter.ball.id];
+    if (palette) {
+      base.addColorStop(0, palette[0]);
+      base.addColorStop(0.12, palette[1]);
+      base.addColorStop(0.48, palette[2]);
+      base.addColorStop(0.82, palette[3]);
+      base.addColorStop(1, palette[4]);
+    }
   } else if (left) {
     base.addColorStop(0, "#dafaff");
     base.addColorStop(0.12, "#9fddea");
@@ -785,6 +1029,20 @@ function drawFighter(fighter) {
   ctx.shadowBlur = 26;
   ctx.fill();
   ctx.shadowBlur = 0;
+
+  if (!["dagger", "spikes", "axe"].includes(fighter.ball.id) && BALL_DETAILS[fighter.ball.id]) {
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.beginPath();
+    ctx.arc(0, 0, fighter.radius - 12, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.38)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = "#effaff";
+    ctx.font = "900 28px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(fighter.ball.name.charAt(0), 0, 1);
+  }
 
   if (fighter.ball.id === "spikes") {
     ctx.fillStyle = "#e0b16f";
@@ -873,10 +1131,26 @@ const BALL_DETAILS = {
     health: "230",
     ultimate: "8 sec",
   },
+  laser: { name:"Laser Ball", role:"Beam specialist", description:"Fires tight piercing laser shots and an expanding Laser Net.", attack:"12 beam", health:"190", ultimate:"12 sec" },
+  fire: { name:"Fire Ball", role:"Area attacker", description:"Throws ember shots and launches an Inferno Ring.", attack:"9 fire", health:"210", ultimate:"10 sec" },
+  vines: { name:"Vines Ball", role:"Control attacker", description:"Launches snaring vine shots and deploys a vine net.", attack:"7 vine", health:"220", ultimate:"10 sec" },
+  seed: { name:"Seed Bomb Ball", role:"Explosive thrower", description:"Drops timed explosive seeds and a clustered Seedstorm.", attack:"12 seed", health:"200", ultimate:"11 sec" },
+  multishots: { name:"Multishots Ball", role:"Volley attacker", description:"Fires predictable fan shots and a dense Triple Torrent.", attack:"5 × 5", health:"180", ultimate:"10 sec" },
+  electric: { name:"Electric Ball", role:"Arc specialist", description:"Launches arcing shock shots and a radial Storm Grid.", attack:"10 arc", health:"195", ultimate:"9 sec" },
+  multiplier: { name:"Multiplier Ball", role:"Projectile amplifier", description:"Duplicates attacks and overdrives every active shot.", attack:"6 ×", health:"210", ultimate:"10 sec" },
+  gravity: { name:"Gravity Ball", role:"Control specialist", description:"Bends projectiles inward and creates a Gravity Vortex.", attack:"8 pull", health:"215", ultimate:"10 sec" },
+  mirror: { name:"Mirror Ball", role:"Counter attacker", description:"Reflects incoming shots and fires a Reflection Pulse.", attack:"8 mirror", health:"205", ultimate:"10 sec" },
+  time: { name:"Time Ball", role:"Arena controller", description:"Slows the field and freezes the enemy during Time Freeze.", attack:"9 time", health:"190", ultimate:"10 sec" },
+  magnet: { name:"Magnet Ball", role:"Powerup collector", description:"Pulls nearby powerups and attracts every powerup for its ultimate.", attack:"7 pull", health:"220", ultimate:"10 sec" },
+  ice: { name:"Ice Ball", role:"Slow specialist", description:"Leaves frost effects and casts a widening Frost Ring.", attack:"8 ice", health:"210", ultimate:"10 sec" },
+  shield: { name:"Shield Ball", role:"Defensive bruiser", description:"Uses contact attacks and rotating shield shells.", attack:"11 touch", health:"260", ultimate:"10 sec" },
+  shadow: { name:"Shadow Ball", role:"Position trickster", description:"Uses rapid shots and swaps with the enemy using Shadow Swap.", attack:"7 shadow", health:"200", ultimate:"10 sec" },
+  bomb: { name:"Bomb Ball", role:"Blast attacker", description:"Launches blast shots and detonates a delayed Blast Ring.", attack:"12 blast", health:"210", ultimate:"10 sec" },
 };
 
 function showSideDetails(side, ballId) {
   const details = BALL_DETAILS[ballId];
+  if (!details) return;
   const prefix = side === "left" ? "left" : "right";
   const role = document.querySelector(`#${prefix}DetailRole`);
   const name = document.querySelector(`#${prefix}DetailName`);
@@ -886,13 +1160,17 @@ function showSideDetails(side, ballId) {
   if (description) description.textContent = details.description;
   const detailOrb = document.querySelector(`#${prefix}DetailBall`);
   if (detailOrb) {
-    const orbClass = ballId === "spikes" ? "spikes-ball" : ballId === "axe" ? "axe-ball" : "dagger-ball";
+    const orbClass = ballId === "spikes"
+      ? "spikes-ball"
+      : ballId === "axe"
+        ? "axe-ball"
+        : `${ballId}-ball`;
     detailOrb.className = `detail-orb ${orbClass}`;
     detailOrb.innerHTML = ballId === "spikes"
       ? '<span class="detail-spike">◆</span>'
       : ballId === "axe"
         ? '<span class="detail-spike">⚒</span>'
-        : '<span class="detail-face"><i></i><i></i></span>';
+        : `<span class="detail-letter">${BALL_DETAILS[ballId].name.charAt(0)}</span>`;
   }
 }
 
