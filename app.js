@@ -12,6 +12,34 @@ const BALLS = {
   },
 };
 
+const POWERUPS = {
+  heal: {
+    name: "Heal",
+    symbol: "+",
+    color: "#77eca5",
+  },
+  damage: {
+    name: "Power",
+    symbol: "×",
+    color: "#ffb36a",
+  },
+  attackSpeed: {
+    name: "Rapid",
+    symbol: "»",
+    color: "#8addf2",
+  },
+  moveSpeed: {
+    name: "Haste",
+    symbol: "›",
+    color: "#c8a4ff",
+  },
+  shield: {
+    name: "Shield",
+    symbol: "◆",
+    color: "#f1df78",
+  },
+};
+
 const setupScreen = document.querySelector("#setupScreen");
 const battleScreen = document.querySelector("#battleScreen");
 const canvas = document.querySelector("#arena");
@@ -49,6 +77,12 @@ function makeFighter(side, ballId) {
     nextThrow: 350,
     ultimateCharge: 0,
     ultActive: false,
+    shield: 0,
+    damageBoostUntil: 0,
+    attackSpeedUntil: 0,
+    moveSpeedUntil: 0,
+    pickupText: "",
+    pickupTextUntil: 0,
   };
 }
 
@@ -63,6 +97,9 @@ function startMatch() {
     right: makeFighter("right", "dagger"),
     projectiles: [],
     impactParticles: [],
+    powerups: [],
+    powerupLabels: [],
+    nextPowerup: 7000,
     elapsed: 0,
     ended: false,
   };
@@ -185,12 +222,61 @@ function separateFighters(a, b) {
   }
 }
 
+function spawnPowerup() {
+  const types = Object.keys(POWERUPS);
+  const type = types[Math.floor(Math.random() * types.length)];
+  const padding = 130;
+  match.powerups.push({
+    type,
+    x: padding + Math.random() * (canvas.width - padding * 2),
+    y: 90 + Math.random() * (canvas.height - 180),
+    radius: 24,
+    age: 0,
+  });
+  match.nextPowerup = 9000 + Math.random() * 6000;
+}
+
+function applyPowerup(fighter, powerup) {
+  const info = POWERUPS[powerup.type];
+  fighter.pickupText = info.name;
+  fighter.pickupTextUntil = match.elapsed + 1400;
+
+  if (powerup.type === "heal") {
+    fighter.health = Math.min(fighter.ball.maxHealth, fighter.health + 40);
+  } else if (powerup.type === "damage") {
+    fighter.damageBoostUntil = match.elapsed + 9000;
+  } else if (powerup.type === "attackSpeed") {
+    fighter.attackSpeedUntil = match.elapsed + 9000;
+  } else if (powerup.type === "moveSpeed") {
+    fighter.moveSpeedUntil = match.elapsed + 9000;
+  } else if (powerup.type === "shield") {
+    fighter.shield = 1;
+  }
+
+  match.powerupLabels.push({
+    text: `+ ${info.name}`,
+    x: fighter.x,
+    y: fighter.y - 60,
+    life: 1,
+    color: info.color,
+  });
+
+  updateHealthUI(fighter);
+}
+
+function updateHealthUI(fighter) {
+  const fill = fighter.side === "left" ? leftHealth : rightHealth;
+  fill.style.width = `${(fighter.health / fighter.ball.maxHealth) * 100}%`;
+}
+
 function update(now) {
   const delta = Math.min((now - lastTime) / 1000, 0.033);
   lastTime = now;
 
   if (!match.ended) {
     match.elapsed += delta * 1000;
+    match.nextPowerup -= delta * 1000;
+    if (match.nextPowerup <= 0) spawnPowerup();
 
     for (const fighter of [match.left, match.right]) {
       fighter.flash = Math.max(0, fighter.flash - delta * 4);
@@ -207,8 +293,10 @@ function update(now) {
       }
       fighter.turnTimer -= delta;
 
+
       if (fighter.turnTimer <= 0) {
-        const speed = 58 + Math.random() * 24;
+        const boosted = fighter.moveSpeedUntil > match.elapsed;
+        const speed = (58 + Math.random() * 24) * (boosted ? 1.35 : 1);
         const towardCenter = fighter.side === "left" ? 1 : -1;
         const horizontalTarget = towardCenter * (0.4 + Math.random() * 0.6);
         const angle = Math.atan2((Math.random() - 0.5) * 1.3, horizontalTarget);
@@ -244,11 +332,27 @@ function update(now) {
       if (fighter.nextThrow <= 0) {
         const opponent = fighter.side === "left" ? match.right : match.left;
         throwDagger(fighter, opponent);
-        fighter.nextThrow = fighter.ball.throwInterval;
+        const boosted = fighter.attackSpeedUntil > match.elapsed;
+        fighter.nextThrow = boosted
+          ? fighter.ball.throwInterval * 0.55
+          : fighter.ball.throwInterval;
       }
     }
 
     separateFighters(match.left, match.right);
+
+    for (const powerup of match.powerups) {
+      powerup.age += delta;
+      for (const fighter of [match.left, match.right]) {
+        const dx = powerup.x - fighter.x;
+        const dy = powerup.y - fighter.y;
+        if (Math.hypot(dx, dy) <= fighter.radius + powerup.radius) {
+          applyPowerup(fighter, powerup);
+          powerup.collected = true;
+        }
+      }
+    }
+    match.powerups = match.powerups.filter((powerup) => !powerup.collected);
 
     for (const projectile of match.projectiles) {
       projectile.x += projectile.vx * delta;
@@ -258,7 +362,14 @@ function update(now) {
       const dx = projectile.x - opponent.x;
       const dy = projectile.y - opponent.y;
       if (Math.hypot(dx, dy) <= opponent.radius - 8) {
-        opponent.health = Math.max(0, opponent.health - projectile.damage);
+        if (opponent.shield > 0) {
+          opponent.shield = 0;
+          createImpact(projectile.x, projectile.y, "#f1df78");
+        } else {
+          const owner = projectile.owner === "left" ? match.left : match.right;
+          const damageMultiplier = owner.damageBoostUntil > match.elapsed ? 1.5 : 1;
+          opponent.health = Math.max(0, opponent.health - projectile.damage * damageMultiplier);
+        }
         opponent.flash = 1;
         createImpact(projectile.x, projectile.y, projectile.owner === "left" ? "#8addf2" : "#c397e5");
         projectile.hit = true;
@@ -290,6 +401,12 @@ function update(now) {
       particle.life -= delta;
     }
     match.impactParticles = match.impactParticles.filter((particle) => particle.life > 0);
+
+    for (const label of match.powerupLabels) {
+      label.y -= 24 * delta;
+      label.life -= delta;
+    }
+    match.powerupLabels = match.powerupLabels.filter((label) => label.life > 0);
   }
 
   draw();
@@ -326,6 +443,26 @@ function draw() {
   ctx.lineTo(canvas.width / 2, canvas.height);
   ctx.stroke();
 
+  for (const powerup of match.powerups) {
+    const info = POWERUPS[powerup.type];
+    ctx.save();
+    ctx.translate(powerup.x, powerup.y);
+    ctx.rotate(powerup.age * 1.4);
+    ctx.beginPath();
+    ctx.arc(0, 0, powerup.radius, 0, Math.PI * 2);
+    ctx.fillStyle = info.color;
+    ctx.shadowColor = info.color;
+    ctx.shadowBlur = 20;
+    ctx.fill();
+    ctx.rotate(-powerup.age * 1.4);
+    ctx.fillStyle = "#10202b";
+    ctx.font = "900 22px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(info.symbol, 0, 1);
+    ctx.restore();
+  }
+
   drawFighter(match.left);
   drawFighter(match.right);
 
@@ -355,12 +492,31 @@ function draw() {
     ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  for (const label of match.powerupLabels) {
+    ctx.globalAlpha = Math.max(0, label.life);
+    ctx.fillStyle = label.color;
+    ctx.font = "900 14px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(label.text, label.x, label.y);
+  }
   ctx.globalAlpha = 1;
 }
 
 function drawFighter(fighter) {
   ctx.save();
   ctx.translate(fighter.x, fighter.y);
+
+  if (fighter.shield > 0) {
+    ctx.beginPath();
+    ctx.arc(0, 0, fighter.radius + 10, 0, Math.PI * 2);
+    ctx.strokeStyle = "#f1df78";
+    ctx.lineWidth = 4;
+    ctx.shadowColor = "#f1df78";
+    ctx.shadowBlur = 16;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
 
   ctx.beginPath();
   ctx.ellipse(0, 54, 48, 10, 0, 0, Math.PI * 2);
