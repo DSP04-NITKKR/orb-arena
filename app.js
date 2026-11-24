@@ -8,7 +8,21 @@ const BALLS = {
     projectileSpeed: 420,
     ultimateName: "Dagger Storm",
     ultimateDescription: "Summons 5 predictive daggers",
+    ultimateChargeHits: 5,
+    ultimateChargePerSecond: 0,
+  },
+  spikes: {
+    id: "spikes",
+    name: "Spikes Ball",
+    maxHealth: 220,
+    projectileDamage: 0,
+    throwInterval: 0,
+    projectileSpeed: 520,
+    contactDamage: 18,
+    ultimateName: "Spike Burst",
+    ultimateDescription: "Throws spikes in every direction",
     ultimateChargePerSecond: 10,
+    ultimateChargeHits: 0,
   },
 };
 
@@ -57,6 +71,8 @@ const winnerName = document.querySelector("#winnerName");
 let animationFrame = 0;
 let lastTime = 0;
 let match = null;
+let selectedLeftBall = "dagger";
+let selectedRightBall = "dagger";
 
 const MOVEMENT_DRAW = [];
 for (let seconds = 2; seconds <= 15; seconds += 1) {
@@ -89,9 +105,11 @@ function makeFighter(side, ballId) {
     ultimateCharge: 0,
     ultActive: false,
     shield: 0,
+    contactDamageUntil: 0,
     damageBoostUntil: 0,
     attackSpeedUntil: 0,
     moveSpeedUntil: 0,
+    successfulHits: 0,
     pickupText: "",
     pickupTextUntil: 0,
   };
@@ -104,8 +122,8 @@ function startMatch() {
   roundLabel.textContent = "FIGHT";
 
   match = {
-    left: makeFighter("left", "dagger"),
-    right: makeFighter("right", "dagger"),
+    left: makeFighter("left", selectedLeftBall),
+    right: makeFighter("right", selectedRightBall),
     projectiles: [],
     impactParticles: [],
     powerups: [],
@@ -159,6 +177,23 @@ function fireUltimate(fighter, opponent) {
   fighter.flash = 1.2;
   roundLabel.textContent = `${fighter.side === "left" ? "LEFT" : "RIGHT"} ULTIMATE`;
 
+  if (fighter.ball.id === "spikes") {
+    for (let i = 0; i < 16; i += 1) {
+      const angle = (Math.PI * 2 * i) / 16;
+      match.projectiles.push({
+        x: fighter.x + Math.cos(angle) * 52,
+        y: fighter.y + Math.sin(angle) * 52,
+        vx: Math.cos(angle) * fighter.ball.projectileSpeed,
+        vy: Math.sin(angle) * fighter.ball.projectileSpeed,
+        angle,
+        owner: fighter.side,
+        damage: 10,
+        ultimate: true,
+        spike: true,
+      });
+    }
+  }
+
   for (const offset of spread) {
     const angle = baseAngle + offset;
     match.projectiles.push({
@@ -185,7 +220,11 @@ function updateUltimateUI(fighter) {
   fill.style.width = `${charge}%`;
   const bar = fighter.side === "left" ? leftUltimate : rightUltimate;
   bar.classList.toggle("charged", charge >= 100);
-  bar.setAttribute("aria-label", `${fighter.ball.name} ultimate ${Math.floor(charge)} percent charged`);
+  if (fighter.ball.id === "dagger") {
+    bar.setAttribute("aria-label", `${fighter.ball.name} ultimate ${fighter.successfulHits} of 5 successful hits`);
+  } else {
+    bar.setAttribute("aria-label", `${fighter.ball.name} ultimate ${Math.floor(charge)} percent charged`);
+  }
 }
 
 function createImpact(x, y, color) {
@@ -230,7 +269,26 @@ function separateFighters(a, b) {
 
     a.contactFlash = 1;
     b.contactFlash = 1;
+
+    if (a.ball.id === "spikes") damageOnContact(a, b);
+    if (b.ball.id === "spikes") damageOnContact(b, a);
   }
+}
+
+function damageOnContact(attacker, target) {
+  if (attacker.contactDamageUntil > match.elapsed) return;
+  attacker.contactDamageUntil = match.elapsed + 700;
+
+  if (target.shield > 0) {
+    target.shield = 0;
+  } else {
+    target.health = Math.max(0, target.health - attacker.ball.contactDamage);
+  }
+  attacker.flash = 1;
+  target.flash = 1;
+  createImpact(target.x, target.y, "#e9a55c");
+  updateHealthUI(target);
+  if (target.health <= 0) endMatch(attacker.side);
 }
 
 function spawnPowerup() {
@@ -292,10 +350,12 @@ function update(now) {
     for (const fighter of [match.left, match.right]) {
       fighter.flash = Math.max(0, fighter.flash - delta * 4);
       fighter.contactFlash = Math.max(0, fighter.contactFlash - delta * 5);
-      fighter.ultimateCharge = Math.min(
-        100,
-        fighter.ultimateCharge + delta * fighter.ball.ultimateChargePerSecond
-      );
+      if (fighter.ball.id === "spikes") {
+        fighter.ultimateCharge = Math.min(
+          100,
+          fighter.ultimateCharge + delta * fighter.ball.ultimateChargePerSecond
+        );
+      }
       updateUltimateUI(fighter);
 
       if (fighter.ultimateCharge >= 100) {
@@ -340,7 +400,7 @@ function update(now) {
 
       fighter.nextThrow -= delta * 1000;
 
-      if (fighter.nextThrow <= 0) {
+      if (fighter.ball.id === "dagger" && fighter.nextThrow <= 0) {
         const opponent = fighter.side === "left" ? match.right : match.left;
         throwDagger(fighter, opponent);
         const boosted = fighter.attackSpeedUntil > match.elapsed;
@@ -384,6 +444,21 @@ function update(now) {
         opponent.flash = 1;
         createImpact(projectile.x, projectile.y, projectile.owner === "left" ? "#8addf2" : "#c397e5");
         projectile.hit = true;
+        if (projectile.owner === "left") {
+          const owner = match.left;
+          if (owner.ball.id === "dagger") {
+            owner.successfulHits = Math.min(5, owner.successfulHits + 1);
+            owner.ultimateCharge = owner.successfulHits * 20;
+            if (owner.ultimateCharge >= 100) owner.ultimateCharge = 100;
+          }
+        } else {
+          const owner = match.right;
+          if (owner.ball.id === "dagger") {
+            owner.successfulHits = Math.min(5, owner.successfulHits + 1);
+            owner.ultimateCharge = owner.successfulHits * 20;
+            if (owner.ultimateCharge >= 100) owner.ultimateCharge = 100;
+          }
+        }
 
         if (opponent.side === "left") {
           leftHealth.style.width = `${(opponent.health / opponent.ball.maxHealth) * 100}%`;
@@ -570,11 +645,30 @@ function drawFighter(fighter) {
 function endMatch(winnerSide) {
   match.ended = true;
   roundLabel.textContent = "K.O.";
-  winnerName.textContent = `${winnerSide === "left" ? "Dagger Ball" : "Dagger Ball"} wins`;
+  const winner = winnerSide === "left" ? match.left : match.right;
+  winnerName.textContent = `${winner.ball.name} wins`;
   winnerOverlay.classList.remove("hidden");
 }
 
 document.querySelector("#fightButton").addEventListener("click", startMatch);
+document.querySelectorAll(".ball-card[data-side][data-ball], #leftBall, #rightBall").forEach((card) => {
+  card.addEventListener("click", () => {
+    const side = card.dataset.side || (card.id === "leftBall" ? "left" : "right");
+    const ballId = card.dataset.ball;
+    if (side === "left") selectedLeftBall = ballId;
+    if (side === "right") selectedRightBall = ballId;
+
+    document.querySelectorAll(`.ball-card[data-side="${side}"], #${side}Ball`).forEach((option) => {
+      option.classList.toggle("selected", option === card);
+      option.setAttribute("aria-pressed", option === card ? "true" : "false");
+    });
+
+    const check = card.querySelector(".check");
+    if (!check) {
+      card.insertAdjacentHTML("beforeend", '<span class="check">✓</span>');
+    }
+  });
+});
 document.querySelector("#rematchButton").addEventListener("click", startMatch);
 document.querySelector("#changeButton").addEventListener("click", () => {
   cancelAnimationFrame(animationFrame);

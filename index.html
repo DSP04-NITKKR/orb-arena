@@ -25,7 +25,7 @@
         <div class="selection-grid">
           <article class="fighter-slot">
             <div class="slot-label"><span>1</span> Left fighter</div>
-            <button id="leftBall" class="ball-card selected" type="button" aria-pressed="true">
+            <button id="leftBall" class="ball-card selected" type="button" aria-pressed="true" data-ball="dagger">
               <span class="ball-preview dagger-ball">
                 <span class="ball-face"><i></i><i></i></span>
               </span>
@@ -36,13 +36,21 @@
               </span>
               <span class="check">✓</span>
             </button>
+            <button class="ball-card spikes-card" type="button" data-side="left" data-ball="spikes">
+              <span class="ball-preview spikes-preview"><span class="spikes-visual">◆</span></span>
+              <span class="ball-copy">
+                <strong>Spikes Ball</strong>
+                <small>Close-contact bruiser</small>
+                <span class="attack-pattern">18 damage on touch<br />Spike Burst every 10 sec</span>
+              </span>
+            </button>
           </article>
 
           <div class="versus">VS</div>
 
           <article class="fighter-slot">
             <div class="slot-label"><span>2</span> Right fighter</div>
-            <button id="rightBall" class="ball-card selected" type="button" aria-pressed="true">
+            <button id="rightBall" class="ball-card selected" type="button" aria-pressed="true" data-ball="dagger">
               <span class="ball-preview dagger-ball purple">
                 <span class="ball-face"><i></i><i></i></span>
               </span>
@@ -52,6 +60,14 @@
                 <span class="attack-pattern">Throws one dagger every 1.8 sec<br />Dagger Storm charges over 10 sec · auto-fires</span>
               </span>
               <span class="check">✓</span>
+            </button>
+            <button class="ball-card spikes-card" type="button" data-side="right" data-ball="spikes">
+              <span class="ball-preview spikes-preview purple"><span class="spikes-visual">◆</span></span>
+              <span class="ball-copy">
+                <strong>Spikes Ball</strong>
+                <small>Close-contact bruiser</small>
+                <span class="attack-pattern">18 damage on touch<br />Spike Burst every 10 sec</span>
+              </span>
             </button>
           </article>
         </div>
