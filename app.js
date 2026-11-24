@@ -2,8 +2,8 @@ const BALLS = {
   dagger: {
     id: "dagger",
     name: "Dagger Ball",
-    maxHealth: 100,
-    projectileDamage: 10,
+    maxHealth: 200,
+    projectileDamage: 5,
     throwInterval: 1800,
     projectileSpeed: 420,
     ultimateName: "Dagger Storm",
@@ -262,9 +262,9 @@ function update(now) {
         projectile.hit = true;
 
         if (opponent.side === "left") {
-          leftHealth.style.width = `${opponent.health}%`;
+          leftHealth.style.width = `${(opponent.health / opponent.ball.maxHealth) * 100}%`;
         } else {
-          rightHealth.style.width = `${opponent.health}%`;
+          rightHealth.style.width = `${(opponent.health / opponent.ball.maxHealth) * 100}%`;
         }
 
         if (opponent.health <= 0) {
