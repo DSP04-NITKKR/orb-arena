@@ -515,12 +515,16 @@ function update(now) {
     for (const fighter of [match.left, match.right]) {
       if (fighter.ball.id !== "axe") continue;
       const opponent = fighter.side === "left" ? match.right : match.left;
-      const axeDistance = 82;
+      const axeDistance = 118;
       const axeX = fighter.x + Math.cos(fighter.axeAngle) * axeDistance;
       const axeY = fighter.y + Math.sin(fighter.axeAngle) * axeDistance;
-      if (Math.hypot(axeX - opponent.x, axeY - opponent.y) < opponent.radius - 8) {
+      if (Math.hypot(axeX - opponent.x, axeY - opponent.y) < opponent.radius + 18) {
         if (fighter.axeDamageUntil > match.elapsed) continue;
         fighter.axeDamageUntil = match.elapsed + 650;
+        const beforeSpeed = Math.hypot(fighter.vx, fighter.vy);
+        fighter.vx = -fighter.vx;
+        fighter.vy = -fighter.vy;
+        normalizeVelocityMagnitude(fighter, beforeSpeed);
         if (opponent.shield > 0) {
           opponent.shield = 0;
         } else {
@@ -794,9 +798,9 @@ function drawFighter(fighter) {
     ctx.lineWidth = 7;
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.lineTo(82, 0);
+    ctx.lineTo(118, 0);
     ctx.stroke();
-    ctx.translate(82, 0);
+    ctx.translate(118, 0);
     ctx.fillStyle = "#d3d0c3";
     ctx.strokeStyle = "#5f5548";
     ctx.lineWidth = 3;
