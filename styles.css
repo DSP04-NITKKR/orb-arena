@@ -91,10 +91,11 @@ h1 {
 }
 
 .agent-select {
+  width: 100%;
   min-height: 410px;
   margin-top: 36px;
   display: grid;
-  grid-template-columns: 170px minmax(300px, 1fr) 170px;
+  grid-template-columns: 170px 1fr 170px;
   overflow: hidden;
   border: 1px solid rgba(140, 228, 255, 0.14);
   border-radius: 16px;
@@ -104,6 +105,8 @@ h1 {
 }
 
 .side-selector {
+  width: 170px;
+  min-width: 170px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -111,6 +114,11 @@ h1 {
   border-right: 1px solid rgba(140, 228, 255, 0.09);
   padding: 22px 16px;
 }
+
+.left-side-selector { grid-column: 1; grid-row: 1; }
+.right-side-selector { grid-column: 3; grid-row: 1; }
+
+.ball-detail { grid-column: 2; grid-row: 1; min-width: 0; }
 
 .side-selector p {
   margin: 0 0 4px;
@@ -610,11 +618,15 @@ h1 {
   .topbar { height: 62px; }
   .setup-screen { padding-top: 28px; }
   .agent-select {
-    min-height: 430px;
-    grid-template-columns: 94px 1fr 94px;
+    min-height: 390px;
+    grid-template-columns: 86px minmax(0, 1fr) 86px;
   }
-  .side-selector { padding: 14px 8px; }
-  .side-ball { width: 56px; height: 56px; }
+  .side-selector {
+    width: 86px;
+    min-width: 86px;
+    padding: 12px 4px;
+  }
+  .side-ball { width: 50px; height: 50px; }
   .ball-detail {
     grid-template-columns: 1fr;
     align-content: center;
