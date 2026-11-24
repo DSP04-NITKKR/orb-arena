@@ -287,6 +287,17 @@ h1 {
   transition: width 180ms ease;
 }
 
+.match-pattern {
+  display: block;
+  margin-top: 7px;
+  color: #93aabd;
+  font-size: 9px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
 .right-combatant .health-fill {
   margin-left: auto;
   background: #c397e5;
